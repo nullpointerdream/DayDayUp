@@ -100,3 +100,7 @@ date -s "2007-08-03 14:15:00"
 	.rar  
 	解压：rar x FileName.rar  
 	压缩：rar a FileName.rar DirName 
+
+### 重启网络服务
+suse ：  service network restart  
+ubuntu ：  /etc/init.d/networking restart
