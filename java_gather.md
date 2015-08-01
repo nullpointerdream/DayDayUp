@@ -20,3 +20,7 @@
 要将数组转成list，我们都知道用**Arrays.asList(arr)**;  
 但是，这里有一个要注意的问题，**这个arr不能是基本类型数组**，  
 比如对一个int[],进行Arrays.asList(),返回值是List<int[]>。asList()只能识别对象类型。
+
+### 3，数组的查找
+Arrays提供了binarySearch方法进行查找。  
+但是，注意这只能用于对已经排好序的数组进行查找，对一个乱序数组使用binarySearch会导致不可预料的后果。
