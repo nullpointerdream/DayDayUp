@@ -24,3 +24,6 @@
 ### 3，数组的查找
 Arrays提供了binarySearch方法进行查找。  
 但是，注意这只能用于对已经排好序的数组进行查找，对一个乱序数组使用binarySearch会导致不可预料的后果。
+
+### 4，jdk源码
+安装java之后，在安装路径如D:\Program Files (x86)\Java\jdk1.7.0_79下会有，src.zip。解压就是源码。
