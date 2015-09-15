@@ -387,3 +387,26 @@ chmod a-wx,a+r   file
 说明：
 
 同上例
+
+
+### 开smb文件共享服务
+将下面的代码保存为shell脚本，执行即可
+
+	#!/bin/bash
+	#check where the smb exist
+	smbFilePath="/etc/samba/smb.conf"
+	if [ ! -e ${smbFilePath} ]
+	then 
+	    echo "'$smbFilePath' not exist,please check!"
+	    exit 1
+	fi
+	guestAccount="       guest account = root"
+	sed -i "/global/a\ $guestAccount" $smbFilePath
+	path_dir="[root]
+	        comment = root
+	        inherit acls = Yes
+	        path = /root
+	        guest ok=yes
+	        writable = yes"
+	echo "$path_dir" >>$smbFilePath
+	rcsmb restart
