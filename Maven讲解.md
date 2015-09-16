@@ -121,3 +121,9 @@ Maven是一个项目管理工具，通过项目对象模型即POM文件，描述
 - mvn install：安装生产的jar到本地仓库中，这样其他依赖该jar的模块就可以使用了。
 
 maven编译流程： 编译代码--->发现需要依赖--->去pom中找依赖的坐标--->根据坐标去本地仓库找,找到将路径加到项目的classpath中--->没找到再去中央仓库找，找打放到本地仓库里,再加classpath
+
+
+## eclipse中使用maven
+- eclipse4.x已经默认集成maven，直接使用即可。低版本安装插件。简单略过。
+- 创建一个maven工程。
+- run as maven build..   对话框中Goals可以填compile编译，package打包等，clean，install直接执行run as mvn install即可
