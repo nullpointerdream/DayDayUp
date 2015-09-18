@@ -42,3 +42,23 @@
 	- config 当Mongo用于分片设置时，config数据库在内部使用，用于保存分片的相关信息
 
 数据库名+集合名就是完整的集合限定名，称为命名空间。
+
+### 安装MongoDB
+1. 服务器suse11
+2. 下载mongodb downloads.mongodb.org/linux/mongodb-linux-x86_64-2.6.4.tgz （3.*版本需要GLIBCXX_3.4.14）
+3. 将mongodb-linux-x86_64-2.6.4.tgz下载到mongodb文件夹
+4. 解压：tar -zxvf mongodb-linux-x86_64-2.6.4.tgz
+5. 重命名：mv mongodb-linux-x86_64-2.6.4 mongodb
+6. 设置环境变量：export PATH=<mongodb-install-directory>/bin:$PATH
+    例如：export "PATH=$PATH:/home/nim/mongodb/bin/"  >>/etc/profile
+7. 启动，Mongodb数据库需要指定存储数据的文件夹，默认存储目录为：/data/db。
+创建目录/data/db:mkdir -p /data/db  
+进入mongodb/bin 运行` mongod`即可启动mongodb。  
+可加参数：  
+-port portNo 指定端口，默认27017  
+--dbpath dataPath 指定存放数据的目录  
+--logpath logPath  指定日志目录  
+--fork  后台运行，--fork必须和--logpath一起
+
+8. 登陆  
+执行mongo
