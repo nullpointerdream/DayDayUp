@@ -60,5 +60,66 @@
 --logpath logPath  指定日志目录  
 --fork  后台运行，--fork必须和--logpath一起
 
+
 8. 登陆  
-执行mongo
+执行mongo  
+另外mongo还会启动一个基本的http服务，端口是比主端口高1000（即默认是28017）
+这样可以在浏览器登陆mongo了，前提是配置文件里面加入httpinterface=true,然后再创建个用户就可以了
+
+### mongo shell
+运行mongo是启动shell，这是一个完备的Javascript解释器。  
+开启的时候，shell会自动连接到MongoDB服务器的test数据库，并将这个数据库连接赋值给全局变量db，这个变量是通过shell访问数据库的主要入口点。  
+- CRUD基本操作
+
+		> people = {"name":"yunsheng","age":26}
+		{ "name" : "yunsheng", "age" : 26 }
+		> db.peoples.insert(people)
+		WriteResult({ "nInserted" : 1 })
+		> db.peoples.find()
+		{ "_id" : ObjectId("55fc3d627754b90acf65b39f"), "name" : "yunsheng", "age" : 26 }
+		>  
+可以看出，peoples集合在insert的时候并不存在，但是会自动创建出来。对插入的文档，mongo会自动加入一个_id字段。
+
+	> people.sex = "male"
+	male
+	> db.peoples.update({"name":"yunsheng"},people)
+	WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+	> db.peoples.find()
+	{ "_id" : ObjectId("55fc3d627754b90acf65b39f"), "name" : "yunsheng", "age" : 26, "sex" : "male" }
+	>   
+可以看到，mongo可以动态的给文档增加一个属性，然后根据参数更新
+
+	> db.peoples.remove({"name":"ss"})
+	WriteResult({ "nRemoved" : 0 })
+	> db.peoples.remove({"name":"yunsheng"})
+	WriteResult({ "nRemoved" : 1 })
+
+删除
+
+### help
+通过help查看api帮助  
+里面还有再下一层的db.help()查看db级别的api，db.foo.help()查看集合的api等等帮助方法。  
+
+另外，因为这个js的shell，所以可以通过调用方法是不加括号，来查看方法的源码，这样可以看到更具体的用法。如
+	
+	> db.peoples.update
+	function ( query , obj , upsert , multi ){
+	    assert( query , "need a query" );
+	    assert( obj , "need an object" );
+		。。。
+
+### 关于集合名
+- 如果使用了数据库自有的属性作为集合名，在使用时，mongo是先去找属性，找不到才会作为集合返回。  
+可以使用db.getCollection（）方法强制返回集合。
+
+- 因为在js中，x.y和x['y']等价，所以我们可以使用变量来访问子集合了。如遍历子集合。
+
+### 数据类型
+- JSON的6中类型：null,布尔，数字，字符串，数组，对象。
+- mongo的改进：  
+对象id{"x":ObjectId()},  
+日期 从标准纪元开始的毫秒数{"x":new Date()}  
+正则表达式：文档中可以包含正则表达式  
+代码：文档中可以包含js代码  
+undefined：可以使用  
+内嵌文档：可以文档包含文档
