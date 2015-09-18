@@ -80,19 +80,19 @@
 		>  
 可以看出，peoples集合在insert的时候并不存在，但是会自动创建出来。对插入的文档，mongo会自动加入一个_id字段。
 
-	> people.sex = "male"
-	male
-	> db.peoples.update({"name":"yunsheng"},people)
-	WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
-	> db.peoples.find()
-	{ "_id" : ObjectId("55fc3d627754b90acf65b39f"), "name" : "yunsheng", "age" : 26, "sex" : "male" }
-	>   
+		> people.sex = "male"
+		male
+		> db.peoples.update({"name":"yunsheng"},people)
+		WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+		> db.peoples.find()
+		{ "_id" : ObjectId("55fc3d627754b90acf65b39f"), "name" : "yunsheng", "age" : 26, "sex" : "male" }
+		>   
 可以看到，mongo可以动态的给文档增加一个属性，然后根据参数更新
 
-	> db.peoples.remove({"name":"ss"})
-	WriteResult({ "nRemoved" : 0 })
-	> db.peoples.remove({"name":"yunsheng"})
-	WriteResult({ "nRemoved" : 1 })
+		> db.peoples.remove({"name":"ss"})
+		WriteResult({ "nRemoved" : 0 })
+		> db.peoples.remove({"name":"yunsheng"})
+		WriteResult({ "nRemoved" : 1 })
 
 删除
 
