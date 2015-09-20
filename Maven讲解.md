@@ -56,7 +56,7 @@ Maven是一个项目管理工具，通过项目对象模型即POM文件，描述
  
 ## pom文件讲解  
  在Maven世界中，project可以什么都没有，甚至没有代码，但是必须包含pom.xml文件。
-
+	<!-- 根元素 -->
 	<project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
@@ -64,35 +64,58 @@ Maven是一个项目管理工具，通过项目对象模型即POM文件，描述
 	<!-- 4.0.0是当前仅有的可以被Maven2&3同时支持的POM版本，它是必须的。-->
     <modelVersion>4.0.0</modelVersion>
     
-    <!-- 基本设置 -->
+    <!-- 基本设置 坐标信息 -->
 	<!-- 项目包名，常用公司网址反写加项目名-->
+	<!-- 模块化 -->
     <groupId>...</groupId>
 	<!-- 模块名 -->
     <artifactId>...</artifactId>
-	<!-- 版本 如1.0.1SNAOSHOT-->
+	<!-- 版本 一般大版本号+分支版本号+小版本号+snapshot(alpha/bata)/release/GA如1.0.1SNAOSHOT-->
     <version>...</version>
 	<!-- 打包方式，默认jar，还可用war,zip等 -->
     <packaging>...</packaging>
-	<!-- 导入依赖 -->
+
+	<!-- 依赖列表 -->
     <dependencies>
 		<dependency>
 		..依赖坐标..
+			<scope>依赖范围，如test</scope>
+			<!-- 设置依赖是否可选，默认false-->
+			<optional>false/true</option>
+			<!-- 排除依赖传递列表 -->
+			<exclusions>
+				<exclusion>
+					...可加多个排除的依赖...
+				</exclision>
+			</exclusions>
 		</dependency>
 		...
 	</dependencies>
+
+	<!-- 继承父pom -->
     <parent>...</parent>
-    <dependencyManagement>...</dependencyManagement>
+	
+	<!-- 依赖的管理 -->
+	<!-- 不会真正的运行，作用是用于父pom中，供子类引用 -->
+    <dependencyManagement>
+		<dependencies>
+			...
+		</dependencies>
+	</dependencyManagement>
+
+	<!-- 聚合 -->
     <modules>...</modules>
     <properties>...</properties>
     
     <!-- 构建过程的设置 -->
     <build>...</build>
+
     <reporting>...</reporting>
     
     <!-- 项目信息设置 -->
-    <name>...</name>
-    <description>...</description>
-    <url>...</url>
+    <name>.项目描述名..</name>
+    <description>..项目描述.</description>
+    <url>..项目地址.</url>
     <inceptionYear>...</inceptionYear>
     <licenses>...</licenses>
     <organization>...</organization>
@@ -127,3 +150,46 @@ maven编译流程： 编译代码--->发现需要依赖--->去pom中找依赖的
 - eclipse4.x已经默认集成maven，直接使用即可。低版本安装插件。简单略过。
 - 创建一个maven工程。
 - run as maven build..   对话框中Goals可以填compile编译，package打包等，clean，install直接执行run as mvn install即可
+
+## maven的生命周期
+- maven有三套独立的生命周期
+	- clean 清理项目。又包含三个阶段
+		- pre clean 执行清理前的工作
+		- clean 清理上一次构建生产的所有文件
+		- post clean 清理后的工作
+	- default 核心 构建项目，常用的compile-->test-->package-->install
+	- site 生成站点 可以根据pom中的信息自动生产站点。包含以下几个阶段。
+		- pre site
+		- site
+		- post site
+		- site deploy 是发布站点到服务器上
+
+## maven的插件
+我们使用的compile，install等等都是maven的插件，只是这些是基本的核心插件，所以自动下载。maven还有很多其他的插件。可以去<http://maven.apache.org/plugins/index.html>查看，只是没有vpn的时候慢的要死。  
+使用方法举例：
+
+	  <build>
+	  	<!-- 使用插件 -->
+	  	<plugins>
+	  		<plugin>
+	  			<groupId>org.apache.maven.plugins</groupId>
+	  			<artifactId>maven-source-plugin</artifactId>
+	  			<version>2.4</version>
+	  			<!-- 指定使用该插件的时机 -->
+	  			<executions>
+	  				<execution>
+	  					<phase>package</phase>
+	  					<goals>
+	  						<goal>jar-no-fork</goal>	
+	  					</goals>
+	  				</execution>
+	  			</executions>
+	  		</plugin>
+	  	</plugins>
+	  </build>
+
+在package阶段使用该插件将工程打成jar-no-fork的jar包。可查看<http://maven.apache.org/plugins/index.html>得到更详细的说明。
+
+
+
+
