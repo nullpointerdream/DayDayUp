@@ -22,37 +22,43 @@ Maven是一个项目管理工具，通过项目对象模型即POM文件，描述
 			
 - 基础名词：  
 
-		构件  
-		坐标  
-		仓库：  
-			本地仓库： 修改本地仓库地址conf下的settings.xml
-				 <localRepository>/path/to/local/repo</localRepository>
-			远程仓库：
-				 maven默认提供了一个全球远程中央仓库的地址，打开这个jar D:\apache-maven-3.3.3\lib\maven-model-builder-3.3.3.jar\  
-				找到里面的pom-4.0.0.xml文件，这是maven的超级pom，所有的pom均继承这个pom。打开。
-				<repositories> 
-					-<repository> 
-						<id>central</id> 
-						<name>Central Repository</name> 
-						<url>https://repo.maven.apache.org/maven2</url> <layout>default</layout> 
-						-<snapshots> 
-							<enabled>false</enabled> 
-						</snapshots> 
-					</repository> 
-				</repositories>
-				可以看到中央仓库的url。
-				可以复制到浏览器打开，这个地址存放了我们开发可用到的绝大部分资源。
-			镜像仓库：国外的仓库可能比较慢，国内有提供镜像仓库。
-				修改镜像仓库地址：conf下的settings.xml
-				  <mirrors>
-					<mirror>
-				      <id>maven.oschina.net</id>
-				      <mirrorOf>central</mirrorOf>
-				      <name>cnResponsitory</name>
-				      <url>http://maven.oschina.net/content/groups/public</url>
-				    </mirror>    
-				  </mirrors>
-				就是使用配置的url镜像掉central(就是上面超级pom中的中央仓库id)仓库，也可以只用*通配符。
+	- 构件  
+	- 坐标  
+	- 仓库：  
+		- 本地仓库： 修改本地仓库地址conf下的settings.xml
+			 <localRepository>/path/to/local/repo</localRepository>
+		- 远程仓库：
+			 maven默认提供了一个全球远程中央仓库的地址，打开这个jar。如我的	    `D:\apache-maven-3.3.3\lib\maven-model-builder-3.3.3.jar\  `
+			找到里面的pom-4.0.0.xml文件，这是maven的超级pom，所有的pom均继承这个pom。打开
+
+			```
+			<repositories> 
+				-<repository> 
+					<id>central</id> 
+					<name>Central Repository</name> 
+					<url>https://repo.maven.apache.org/maven2</url> <layout>default</layout> 
+					-<snapshots> 
+						<enabled>false</enabled> 
+					</snapshots> 
+				</repository> 
+			</repositories>
+			```
+			可以看到中央仓库的url。
+			可以复制到浏览器打开，这个地址存放了我们开发可用到的绝大部分资源。
+		- 镜像仓库：国外的仓库可能比较慢，国内有提供镜像仓库。
+			修改镜像仓库地址：conf下的settings.xml
+
+			```
+			  <mirrors>
+				<mirror>
+			      <id>maven.oschina.net</id>
+			      <mirrorOf>central</mirrorOf>
+			      <name>cnResponsitory</name>
+			      <url>http://maven.oschina.net/content/groups/public</url>
+			    </mirror>    
+			  </mirrors>
+			  ```
+			就是使用配置的url镜像掉central(就是上面超级pom中的中央仓库id)仓库，也可以只用*通配符。
  
 ## pom文件讲解  
  在Maven世界中，project可以什么都没有，甚至没有代码，但是必须包含pom.xml文件。
@@ -193,10 +199,11 @@ maven编译流程： 编译代码--->发现需要依赖--->去pom中找依赖的
 
 
 ## 依赖范围
-重点看一下pom中的<scope>标签  
+重点看一下pom中的`<scope>`标签  
 具体请参见<http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html>
 maven提供了三种classpath，分别是编译，测试，运行。  
 这三种classpath又可以组合，maven提供了6中scope的值。分别是：
+
 	- compile。 默认的，对编译，测试，运行时都有效。
 	- provided。对编译和测试时有效。例子是servlet的api，因为真正运行时会使用容器的servertlet api。
 	- runtime。 测试和运行时有效。如JDBC
@@ -206,7 +213,7 @@ maven提供了三种classpath，分别是编译，测试，运行。
 
 ## 依赖传递
 比如A依赖于B，B依赖于C，那么A就间接依赖于C。会把C的jar也引入进来。  
-然而A可能并不需要C，就可以使用<exclusions>标签排除依赖。
+然而A可能并不需要C，就可以使用`<exclusions>`标签排除依赖。
 
 ## maven默认jdk版本
 maven默认的jdk版本是1.5，所以我们引入或者新建的maven项目，都会显示使用jdk1.5  
