@@ -204,3 +204,26 @@ maven提供了三种classpath，分别是编译，测试，运行。
 	- system。编译和测试时有效。但是这个会和系统强关联，不具有可移植性。
 	- import。 只用于<dependencyManagement>标签中，表示这是引入的依赖。
 
+## 依赖传递
+比如A依赖于B，B依赖于C，那么A就间接依赖于C。会把C的jar也引入进来。  
+然而A可能并不需要C，就可以使用<exclusions>标签排除依赖。
+
+## maven默认jdk版本
+maven默认的jdk版本是1.5，所以我们引入或者新建的maven项目，都会显示使用jdk1.5  
+但实际上我们一般都会使用1.6以上，所以需要手动修改项目的jdk版本。但是一个个项目改起来又比较麻烦。
+这里有一个方法：修改settings.xml。
+在<profiles>标签下加入
+
+	<profile>
+		<id>jdk-1.7</id>
+		<activation>
+			<activeByDefault>true</activeByDefault>
+			<jdk>1.7</jdk>
+		</activation>
+
+		<properties>
+			<maven.compiler.source>1.7</maven.compiler.source>
+			<maven.compiler.target>1.7</maven.compiler.target>
+			<maven.compiler.compilerVersion>1.7</maven.compiler.compilerVersion>
+		</properties>
+	</profile>
