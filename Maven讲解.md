@@ -103,8 +103,9 @@ Maven是一个项目管理工具，通过项目对象模型即POM文件，描述
 		</dependencies>
 	</dependencyManagement>
 
-	<!-- 聚合 -->
+	<!-- 聚合 可以一下子编译多个模块-->
     <modules>...</modules>
+
     <properties>...</properties>
     
     <!-- 构建过程的设置 -->
@@ -191,5 +192,15 @@ maven编译流程： 编译代码--->发现需要依赖--->去pom中找依赖的
 在package阶段使用该插件将工程打成jar-no-fork的jar包。可查看<http://maven.apache.org/plugins/index.html>得到更详细的说明。
 
 
-
+## 依赖范围
+重点看一下pom中的<scope>标签  
+具体请参见<http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html>
+maven提供了三种classpath，分别是编译，测试，运行。  
+这三种classpath又可以组合，maven提供了6中scope的值。分别是：
+	- compile。 默认的，对编译，测试，运行时都有效。
+	- provided。对编译和测试时有效。例子是servlet的api，因为真正运行时会使用容器的servertlet api。
+	- runtime。 测试和运行时有效。如JDBC
+	- test。 测试时有效。如junit
+	- system。编译和测试时有效。但是这个会和系统强关联，不具有可移植性。
+	- import。 只用于<dependencyManagement>标签中，表示这是引入的依赖。
 
