@@ -255,3 +255,38 @@ maven默认的jdk版本是1.5，所以我们引入或者新建的maven项目，�
 			<maven.compiler.compilerVersion>1.7</maven.compiler.compilerVersion>
 		</properties>
 	</profile>
+
+## 聚合Aggregation
+在父pom中将子项目聚合起来，对父项目执行的命令，都会在子项目上执行。  
+使用聚合：
+	1. 必须将父pom的packaging方式改为pom
+	2. 定义`<modules>`标签，加入子项目
+例子：
+	```
+	<project>
+	  <modelVersion>4.0.0</modelVersion>
+	  <groupId>com.mycompany.app</groupId>
+	  <artifactId>my-app</artifactId>
+	  <version>1</version>
+	  <packaging>pom</packaging>
+	 
+	  <modules>
+	    <module>my-module</module>
+	  </modules>
+	</project>
+	```
+注意，`module`标签查找子项目依然使用相对路径，也就是说上例中的文件关系(使用artifactId作为文件夹名)应该是
+```
+-- my-module
+ |   `-- pom.xml
+ `-- pom.xml
+```
+所以如果是
+```
+.
+ |-- my-module
+ |   `-- pom.xml
+ `-- parent
+     `-- pom.xml
+```
+应该相应的使用```<module>../my-module</module>```
