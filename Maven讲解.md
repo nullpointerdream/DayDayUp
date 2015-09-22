@@ -62,6 +62,7 @@ Maven是一个项目管理工具，通过项目对象模型即POM文件，描述
  
 ## pom文件讲解  
  在Maven世界中，project可以什么都没有，甚至没有代码，但是必须包含pom.xml文件。
+ 
 	<!-- 根元素 -->
 	<project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -140,7 +141,27 @@ Maven是一个项目管理工具，通过项目对象模型即POM文件，描述
     <distributionManagement>...</distributionManagement>
     <profiles>...</profiles>
 	</project>
-
+### parent标签
+parent标签中指定坐标，默认定位的是在文件体系上有继承关系的父pom，但是如果父pom并不是当前pom文件体系上的父级，如：
+``` .
+ |-- my-module
+ |   `-- pom.xml
+ `-- parent
+     `-- pom.xml
+```
+这种情况可以使用`<relativePath>`属性解决，例子：
+```
+<project>
+  <parent>
+    <groupId>com.mycompany.app</groupId>
+    <artifactId>my-app</artifactId>
+    <version>1</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>my-module</artifactId>
+</project>
+```
 
 ## maven命令
 - mvn -v：查看maven版本
