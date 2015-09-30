@@ -127,3 +127,102 @@ undefined：可以使用
 还有一个问题是64位整数不一定能用64位浮点数准确表示。 对不能准确表示的情况，shell会添加两个键，bottom和top分别表示低32位和高32位。  
 日期：使用js中的new Date()生成一个日期类型。注意不要用Date()，这只是返回date的字符串表示，会造成混乱。
 
+### _id
+每个文档都会有一个_id值，来唯一标记一个文档。这个_id可以是任意类型的，默认是ObjectId类型。ObjectId使用12字节的存储空间，每个字节两位16进制数。这样就是24位的字符串。  
+ObjectId的生成是前四个字节时间戳，然后三个字节机器码，然后两个字节PID，然后三个字节计数器。因为时间戳在前，所以大致上文档会按照时间排序。  
+文档中没有_id时，mongodb会自动生成。
+
+## 文档操作
+
+### 批量插入
+批量插入可以明显提高速度，因为一次批量插入是一次tcp请求。可以避免多次请求的开销。  
+只能向一个集合批量插入。一次mongo消息的限制是16M，所以批量插入也是有限制的。  
+批量插入的原理：驱动程序将数据转换成BSON格式，数据库解析BSON，校验是否含有_id和大小是否大于16M。除此之外不做其他校验，然后数据直接作为文本入库。这样可以避免注入攻击。（在shell中使用Object.bsonsize(doc)可以计算doc文档转成bson格式后的大小）  
+
+### 删除文档
+db.users.remove(),删除所有文档，但是不会删除集合，也不会删除索引。可加参数。  
+
+db.drop_collec
+
+### 更新文档
+更新是原子操作  
+
+  
+修改器的使用  
+
+1. 使用增加值修改器"$inc":{"age":2}  
+用来增加已有键的值，键不存在时，创建。只能用于数字值。
+
+		> db.peoples.find()
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "name" : "yunsheng", "age" : 26 }
+		> db.peoples.update({"name":"yunsheng"},
+		... {"$inc":{"age":2}})
+		WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+		> db.peoples.find()
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "name" : "yunsheng", "age" : 28 }
+使用修改器时，是不可以修改_id的值的
+
+2. "$set"修改器。  
+"$set"修改器用来指定一个键，如果键不存在，创建。
+
+		> db.peoples.find()
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "name" : "yunsheng", "age" : 28 }
+		> db.peoples.update({"_id" : ObjectId("560a0981d6aff3c237ce22ed")},{"$set" : {"sex":"male"}})
+		WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+		> db.peoples.find()
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "name" : "yunsheng", "age" : 28, "sex" : "male" }
+		>
+记住修改单个键值对，一定要用"$set"修改器，如果忘加了后果如下
+
+		> db.peoples.update({"_id" : ObjectId("560a0981d6aff3c237ce22ed")},{"sex":"female"})
+		WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+		> db.peoples.find()
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female" }
+整个文档被修改了  
+
+3. 使用"$unset"可将键删除
+4. 数组修改器"$push"，"$pop","$pull"
+如果键已经存在，"$push"会向已有的数组末尾添加一个元素。如果数组不存在会创建一个数组。
+
+
+
+### 数据库连接
+数据库会为每一个MongoDb数据库连接创建一个队列，存放这个连接的请求。注意每个连接都有独立的队列，开两个shell就有两个数据库连接，在一个shell里插入，在另一个shell里面并不一定能立即查到。
+
+## 查询
+### find
+1. find({...})可加查询参数
+2. find({},{...})用第二个参数可指定返回的列
+
+		> db.peoples.find({},{"_id":0})
+		{ "sex" : "female" }
+
+		> db.peoples.find({},{"_id":1})
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed") }
+		> 
+0：不显示，1：显示
+
+3. 查询条件  
+"$lt","$lte","$gt","$gte"  分别是<,<=,>,>=  
+
+		> db.peoples.find({"age":{"$lt":20,"$gt":10}})
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12 }
+
+
+"$ne"是不等于
+
+"$in"用来加一个条件数组
+"$nin"不在
+
+"$or"或条件。用法举例：
+
+		> db.peoples.find()
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
+		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "name" : "bb", "age" : 66 }
+		> db.peoples.find({"$or":[{"name":"aa"},{"age":66}]})
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
+		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "name" : "bb", "age" : 66 }
+		> db.peoples.find({"$or":[{"name":"aa"},{"age":{"$gt":60}}]})
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
+		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "name" : "bb", "age" : 66 }
+		> 
