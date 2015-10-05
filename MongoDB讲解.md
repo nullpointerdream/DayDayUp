@@ -196,7 +196,7 @@ db.drop_collec
 
 ## 查询
 ### find
-1. find({...})可加查询参数
+1. find({...})可加查询参数,key:value形式，多个条件以,间隔，被解释成and关系。
 2. find({},{...})用第二个参数可指定返回的列
 
 		> db.peoples.find({},{"_id":0})
@@ -205,7 +205,7 @@ db.drop_collec
 		> db.peoples.find({},{"_id":1})
 		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed") }
 		> 
-0：不显示，1：显示
+0：不显示，1：显示。_id列不明确指定不返回，总是被返回。
 
 3. 查询条件  
 "$lt","$lte","$gt","$gte"  分别是<,<=,>,>=  
@@ -216,10 +216,14 @@ db.drop_collec
 
 "$ne"是不等于
 
-"$in"用来加一个条件数组
+"$in"用来加一个条件数组，条件可以使不同类型的。
+
+		> db.peoples.find({"age":{"$in":[12,66]}})
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
+		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "name" : "bb", "age" : 66 }
 "$nin"不在
 
-"$or"或条件。用法举例：
+"$or"或条件。用法举例："$or":[条件数组]
 
 		> db.peoples.find()
 		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
@@ -230,4 +234,30 @@ db.drop_collec
 		> db.peoples.find({"$or":[{"name":"aa"},{"age":{"$gt":60}}]})
 		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
 		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "name" : "bb", "age" : 66 }
+		> 
+
+"$mod"模运算。下例是用参数模10，余6的记录
+
+		> db.peoples.find({"age":{"$mod":[10,6]}})
+		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "name" : "bb", "age" : 66 }
+		> 
+
+"$not"非运算。放到前面
+
+		> 
+		> db.peoples.find({"age":{"$not":{"$mod":[10,6]}}})
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
+		> 
+		
+### 查询的条件句是内层文档的键，而修改器则是外层文档的键。一个文档的键可以有多个查询条件，但是不能同时使用多个修改器。
+
+### null
+- null 可以匹配值为null的文档，也会匹配出没有这个键的文档
+
+		> db.peoples.find({"hobby":null})
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
+		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "name" : "bb", "age" : 66 }
+		> 
+如果只想匹配存在这个键，只是值为null的文档（"$exists"）：
+		> db.peoples.find({"hobby":{"$in":[null], "$exists":true }})
 		> 
