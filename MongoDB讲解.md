@@ -259,5 +259,6 @@ db.drop_collec
 		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "name" : "bb", "age" : 66 }
 		> 
 如果只想匹配存在这个键，只是值为null的文档（"$exists"）：
+
 		> db.peoples.find({"hobby":{"$in":[null], "$exists":true }})
 		> 
