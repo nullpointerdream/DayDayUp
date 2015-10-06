@@ -262,3 +262,98 @@ db.drop_collec
 
 		> db.peoples.find({"hobby":{"$in":[null], "$exists":true }})
 		> 
+注意，没有"$eq"操作符
+
+### 正则表达式
+mongo的查询支持正则表达式。  
+
+		> db.peoples.find({"name":/BB/i})
+		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "name" : "bb", "age" : 66 }
+		> 
+
+### 查询数组
+查询数组时，只使用数组中的一个元素匹配，可以查出整条文档。
+
+		> db.peoples.find()
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
+		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "name" : "bb", "age" : 66 }
+		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "running", "swimming" ] }
+		> db.peoples.find({"hobby" : "running"})
+		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "running", "swimming" ] }
+		> 
+
+1. 使用"$all"操作符，查询包含多个值的数组的文档。元素顺序无关。
+
+		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "running", "swimming" ] }
+		> db.peoples.find({"hobby" :{"$all" : ["running","swimming"]}})
+		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "running", "swimming" ] }
+		> db.peoples.find({"hobby" :{"$all" : ["swimming","running"]}})
+		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "running", "swimming" ] }
+		> 
+		
+但是不使用"$all"操作符，直接使用数组精确匹配，就必须元素内容和顺序都一样，即数组一样才匹配。
+
+		> db.peoples.find({"hobby" :["swimming","running"]})
+		> db.peoples.find({"hobby" :["running" , "swimming"]})
+		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "running", "swimming" ] }
+		> db.peoples.find({"hobby" :["running"]})
+		> 
+		
+2. "$size"操作符
+通过数组长度匹配。
+
+		> db.peoples.find({"hobby" :{"$size" : 3}})
+		> db.peoples.find({"hobby" :{"$size" : 2}})
+		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "running", "swimming" ] }
+		> 
+但是"$size"不能与"$gt"等连用，即只能匹配精确长度的数组。  
+一个替代方法是，为文档加一个自增的size属性，如：
+
+		> db.peoples.find()
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
+		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "name" : "bb", "age" : 66 }
+		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "running", "swimming" ] }
+		> db.peoples.update({ "_id" : ObjectId("56132236702bab83edb12602")},
+		... {"$push" : {"hobby": "pingpang"}})
+		WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+		> db.peoples.find()
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
+		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "name" : "bb", "age" : 66 }
+		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "running", "swimming", "pingpang" ] }
+		> 
+这个更新并没有增加一个自增键。
+
+		> db.peoples.update({ "_id" : ObjectId("56132236702bab83edb12602")}, {"$inc" : {"size" : 4}})
+		WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+		> db.peoples.find()
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
+		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "name" : "bb", "age" : 66 }
+		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "running", "swimming", "pingpang", "basketball" ], "size" : 4 }
+下载有了这个"size"键,就可以和"$gt"等连用了。
+
+		> db.peoples.find({"size":{"$gt":4}})
+		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "running", "swimming", "pingpang", "basketball", "football" ], "size" : 5 }
+		> 
+3. "$slice"指定返回条数
+用$slice指定返回的数组的条数。
+
+		> db.peoples.find({ "_id" : ObjectId("56132236702bab83edb12602")},{"hobby" : {"$slice":3 }})
+		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "running", "swimming", "pingpang" ], "size" : 5 }
+		> 
+"$slice":3 可以返回前三个，-3可以返回后三个
+
+		> db.peoples.find({ "_id" : ObjectId("56132236702bab83edb12602")},{"hobby" : {"$slice":[2,2] }})
+		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "pingpang", "basketball" ], "size" : 5 }
+		>
+调过前两个，返回之后的2个。
+
+		> db.peoples.find({ "_id" : ObjectId("56132236702bab83edb12602")},{"hobby" : {"$slice":-3 }, "_id" : 0})
+		{ "hobby" : [ "pingpang", "basketball", "football" ], "size" : 5 }
+		> 
+可以看到，其他键是默认返回的，不想返回加过滤。
+
+
+
+		
+
+3. 
