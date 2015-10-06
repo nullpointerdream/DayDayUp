@@ -334,6 +334,7 @@ mongo的查询支持正则表达式。
 		> db.peoples.find({"size":{"$gt":4}})
 		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "running", "swimming", "pingpang", "basketball", "football" ], "size" : 5 }
 		> 
+		
 3. "$slice"指定返回条数
 用$slice指定返回的数组的条数。
 
@@ -353,7 +354,31 @@ mongo的查询支持正则表达式。
 可以看到，其他键是默认返回的，不想返回加过滤。
 
 
+### 查询内嵌文档
+使用点号查询。深入一级。
 
+		> db.peoples.find({"name.first" : "yang"})
+		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "name" : { "first" : "yang", "last" : "yunsheng" }, "age" : 66 }
+		> 
 		
+再比如有属下数据：
 
-3. 
+		> db.peoples.find()
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
+		{ "_id" : ObjectId("56132236702bab83edb12602"), "hobby" : [ "running", "swimming", "pingpang", "basketball", "football" ], "size" : 5 }
+		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "score" : { "yuwen" : 99, "shuxue" : 88, "yingyu" : 77 }, "name" : "yunsheng", "age" : 26 }
+
+现在想要查询，数学分数大于90的记录，如果用：
+
+		> db.peoples.find({"score.name" : "shuxue", "score.result":{"$gt":90} })
+		{ "_id" : ObjectId("560b9125f566345c78fed34b"), "score" : [ { "name" : "yuwen", "result" : 99 }, { "name" : "shuxue", "result" : 88 } ], "name" : "yunsheng", "age" : 26 }
+		
+这是不对的，因为这是对整个文档去匹配。score.name和score.result都可以匹配到，但不是我们想要的在同一个内嵌文档中。   
+正确写法是这样的：
+
+		> db.peoples.find({"score": {"$elemMatch": {"name":"shuxue","result":{"$gt":90 } }}})
+		> 
+
+
+
+ 
