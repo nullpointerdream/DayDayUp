@@ -381,4 +381,15 @@ mongo的查询支持正则表达式。
 
 
 
+ ### $where查询
+ 使用where查询，可以使用js函数进行过滤，当执行函数的结果为true时，该文档会放到结果集中。
  
+		 > db.peoples.find({"$where" : "this.name == 'aa'"})
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
+
+		> db.peoples.find({"$where" : "function() {return this.name == 'aa'}"})
+		{ "_id" : ObjectId("560a0981d6aff3c237ce22ed"), "sex" : "female", "age" : 12, "name" : "aa" }
+		> 
+注意的是，where查询的效率很低，比常规查询慢很多。因为要将BSON转换成js对象，还不能用索引。所以where是在走投无路下用的。
+
+
