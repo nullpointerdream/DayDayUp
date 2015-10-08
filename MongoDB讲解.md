@@ -379,9 +379,7 @@ mongo的查询支持正则表达式。
 		> db.peoples.find({"score": {"$elemMatch": {"name":"shuxue","result":{"$gt":90 } }}})
 		> 
 
-
-
- ### $where查询
+### where查询
  使用where查询，可以使用js函数进行过滤，当执行函数的结果为true时，该文档会放到结果集中。
  
 		 > db.peoples.find({"$where" : "this.name == 'aa'"})
@@ -393,3 +391,31 @@ mongo的查询支持正则表达式。
 注意的是，where查询的效率很低，比常规查询慢很多。因为要将BSON转换成js对象，还不能用索引。所以where是在走投无路下用的。
 
 
+### 游标
+查询的结果可以放到游标中，暂时保存。  
+
+		> for(i = 1; i<= 100; i++){ db.myCol.insert({x : i}); }
+		WriteResult({ "nInserted" : 1 })
+先建一个文档。
+然后用游标保存结果。
+		> var cursor = db.myCol.find();
+		> while(cursor.hasNext()){
+		... obj = cursor.next();
+		... print(obj.x);
+		... }
+		1
+		2
+		3
+		4
+		5
+		。。。。
+
+还可以用foreach方法
+
+		> var cursor = db.myCol.find();
+		> cursor.forEach(function(obj){ print(obj.x); }  );
+		1
+		2
+		3。。。
+		
+使用游标时，find()不会立即执行，而是当真正获取结果时，才发送查询请求。  
