@@ -419,3 +419,11 @@ mongo的查询支持正则表达式。
 		3。。。
 		
 使用游标时，find()不会立即执行，而是当真正获取结果时，才发送查询请求。  
+
+### limit，skip
+limit用来限制返回结果的数量。 > db.myCol.find().limit(5)  
+skip用来跳过指定条数。> db.myCol.find().skip(5);
+sort用来指定排序，1是升序，-1是降序。可以指定多个排序的键。 > db.myCol.find().sort({"x" : -1})  
+
+这三个要灵活的组合连用。实现分页等。    
+
