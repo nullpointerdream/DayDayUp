@@ -466,8 +466,8 @@ sort用来指定排序，1是升序，-1是降序。可以指定多个排序的�
 游标的释放是很快的，page1和page2在完成遍历时已经释放掉了。
 
 ## 索引
-mongo的索引和关系型数据库的几乎一模一样，所以其技巧同样适用于mongo。
-
+mongo的索引和关系型数据库的几乎一模一样，所以其技巧同样适用于mongo。  
+[索引：www.ituring.com.cn/article/986#](www.ituring.com.cn/article/986#)
 ### 创建索引
 
 		> db.myCol.ensureIndex({"x" : 1})
@@ -494,8 +494,70 @@ mongo会对索引的顺序进行重排序，以便利用更多的索引。
 
 
 
+### 唯一索引
+就是不能插入重复的，最熟悉的就是"_id"
 
+		> db.myCol.ensureIndex({"x":1}, {"unique" : true});
 
+- 消除重复。因为唯一索引，建索引的时候可能会因为重复而失败。  
+一种措施是只保留第一个，而将接下来重复的文档删除。  
+
+		 db.myCol.ensureIndex({"x":1}, {"unique" : true, "dropDups" : true});
+简单粗暴
+
+### 复合唯一索引
+
+### explain
+查看该查询的细节。
+
+		> db.myCol.find().explain()
+		{
+			"cursor" : "BasicCursor",---说明未使用索引
+			"isMultiKey" : false,
+			"n" : 100,
+			"nscannedObjects" : 100,
+			"nscanned" : 100,
+			"nscannedObjectsAllPlans" : 100,
+			"nscannedAllPlans" : 100,
+			"scanAndOrder" : false,
+			"indexOnly" : false,
+			"nYields" : 0,
+			"nChunkSkips" : 0,
+			"millis" : 0,
+			"server" : "mongo:27017",
+			"filterSet" : false
+		}
+		> db.myCol.find({"x" : {"$gt" : 50}}).explain()
+		{
+			"cursor" : "BtreeCursor x_1",------使用索引x_1
+			"isMultiKey" : false,
+			"n" : 50,--------------------------返回50个
+			"nscannedObjects" : 50,
+			"nscanned" : 50,-------------------查了50个
+			"nscannedObjectsAllPlans" : 100,
+			"nscannedAllPlans" : 100,
+			"scanAndOrder" : false,
+			"indexOnly" : false,
+			"nYields" : 0,
+			"nChunkSkips" : 0,
+			"millis" : 0,---------------------时间
+			"indexBounds" : {
+				"x" : [
+					[
+						50,
+						Infinity
+					]
+				]
+			},
+			"server" : "mongo:27017",
+			"filterSet" : false
+		}
+
+可以在system.indexes继续查询该索引的详细信息：
+
+		> db.system.indexes.find({"ns" : "test.myCol", "name":"x_1"});
+		{ "v" : 1, "key" : { "x" : 1 }, "name" : "x_1", "ns" : "test.myCol" }
+		> 
 
 
 
