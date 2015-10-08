@@ -552,17 +552,90 @@ mongo会对索引的顺序进行重排序，以便利用更多的索引。
 			"server" : "mongo:27017",
 			"filterSet" : false
 		}
+### 删除索引
+db.myCol.dropIndex("x_1")      
+db.myCol.dropIndexes()
 
+### 管理索引system.indexes
 可以在system.indexes继续查询该索引的详细信息：
 
 		> db.system.indexes.find({"ns" : "test.myCol", "name":"x_1"});
 		{ "v" : 1, "key" : { "x" : 1 }, "name" : "x_1", "ns" : "test.myCol" }
 		> 
+system.indexes是mongo的一个保留集合，不能直接对其插入或者删除文档
 
+### 修改索引
+> db.myCol.ensureIndex({"x" : 1},{"background" : true});  
+这个{"background" : true}参数为true，可以使索引的建立在后台进行，不阻塞业务。
 
+### 地理空间索引
+建立一个二维索引：
 
+		> db.map.ensureIndex({"gps" : "2d"})
+		{
+			"createdCollectionAutomatically" : true,
+			"numIndexesBefore" : 1,
+			"numIndexesAfter" : 2,
+			"ok" : 1
+		}
+值不是1或者-1了，而是"2d"。  
 
+键"gps"的值必须是某种形式的一对数值，如两个值的数组，两个值的内嵌文档。  
+默认的值是-180~180。  
+也可以在创建索引的时候指定最大值最小值：  
+		
+		> db.map.ensureIndex({"gps" : "2d"},{"min" : -100,"max" : 100});
+		{
+			"createdCollectionAutomatically" : false,
+			"numIndexesBefore" : 1,
+			"numIndexesAfter" : 2,
+			"ok" : 1
+		}
+		
+位置的查询可以用`$near`,查询距离目标最近的文档。默认返回100个。  
 
+		> db.map.find({"gps" : {"$near" : [-10,10]}}).limit(10)
+		{ "_id" : ObjectId("56165e84fee867b264ec175f"), "gps" : [ 10, 10 ] }
+		> 
+还有另一种方法`runCommand`，
+
+		> db.runCommand({geoNear : "map", near : [-10,10], limit:10})
+		{
+			"results" : [
+				{
+					"dis" : 20,
+					"obj" : {
+						"_id" : ObjectId("56165e84fee867b264ec175f"),
+						"gps" : [
+							10,
+							10
+						]
+					}
+				}
+			],
+			"stats" : {
+				"nscanned" : NumberLong(1),
+				"objectsLoaded" : NumberLong(1),
+				"avgDistance" : 20,
+				"maxDistance" : 20,
+				"time" : 0
+			},
+			"ok" : 1
+		}
+好处是可以得到两点间的距离。但是若结果大于4M，只能用find+near
+
+mongo还能够找到指定形状内的点。将`$near`换成`$within`。当前应该是支持矩形，圆形，多边形，球形。
+矩形的`$box`:左下角坐标，右上角坐标：
+
+		> db.map.find({"gps" : {"$within" : {"$box" : [[5,5],[20,20]]}}}).limit(10)
+		{ "_id" : ObjectId("56165e84fee867b264ec175f"), "gps" : [ 10, 10 ] }
+		> 
+
+圆形`$center`:圆心，半径:
+
+		> db.map.find({"gps" : {"$within" : {"$center" : [[5,5],20]}}}).limit(10)
+		{ "_id" : ObjectId("56165e84fee867b264ec175f"), "gps" : [ 10, 10 ] }
+		> 
 
 
 
