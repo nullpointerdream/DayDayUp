@@ -410,3 +410,62 @@ chmod a-wx,a+r   file
 	        writable = yes"
 	echo "$path_dir" >>$smbFilePath
 	rcsmb restart
+
+### 新增用户相关操作
+环境：suse11  
+新增一个用户：`mongo:~ # useradd yunsheng`    
+测试还不能登陆，要设置密码：`mongo:/ # passwd yunsheng`  
+此时可以登陆，但是发现suse11并没有如其他人所讲的，自动创建/home/yunsheng目录，登陆yunsheng，直接进入根目录。  
+而且对home目录没有写权限，  
+`drwxr-xr-x   3 root root     4096 Sep 21 21:12 home/`  
+这样yunsheng也不能给自己在home下建文件夹，只能用root给yunsheng建，然后切换文件所有人chwod。  
+
+		mongo:/ # chown yunsheng:users /home/yunsheng/
+		mongo:/ # ll home/
+		total 8
+		drwxr-xr-x 5 test     users 4096 Sep 21 21:12 test
+		drwxr-xr-x 2 yunsheng users 4096 Oct 10 11:52 yunsheng
+不太方便。  
+
+新增的时候最好直接指定目录。  
+
+		mongo:/ # useradd -d /home/yunsheng5 -m yunsheng5
+		mongo:/ # ll home/
+		total 12
+		drwxr-xr-x 5 test      users 4096 Sep 21 21:12 test
+		drwxr-xr-x 2 yunsheng  users 4096 Oct 10 11:52 yunsheng
+		drwxr-xr-x 5 yunsheng5 users 4096 Oct 10 14:28 yunsheng5
+- 删除用户 `mongo:/ # userdel yunsheng2`  
+- 查看所有用户  
+
+		mongo:/ # users
+		root yunsheng yunsheng5
+
+- 查看所属的用户组，不加参数默认当前用户    
+
+		mongo:/ # groups yunsheng5
+		yunsheng5 : users dialout video
+
+
+
+### 文件权限 
+
+		mongo:/ # ll home/
+		total 12
+		drwxr-xr-x 5 test      users 4096 Sep 21 21:12 test
+		drwxr-xr-x 2 yunsheng  users 4096 Oct 10 11:52 yunsheng
+		drwxr-xr-x 5 yunsheng5 users 4096 Oct 10 14:28 yunsheng5
+10位的标记： drwxr-xr-x  
+第一个d表示文件夹，-表示文件，l表示软连接文件，还有四种不常见。  
+剩下9位，每三位一组表示权限，r：读权限，w：写权限，x：执行权限  
+第一个三位是文件所有人u的权限，第二个是所属组g的权限，第三个是其他用户o的权限  
+注意一个问题：如果用户对一个文件由写权限，但是对文件所属的目录没有写权限，那么他是没有权限删除这个文件的，能修改。  
+文件夹的x权限，就是可以cd进去。  
+
+权限的数字表示，r：4，w：2，x：1  
+如文件夹和可执行文件常用权限755，普通文件常用的644  
+还有一些奇葩的，777,577等等不要用。
+
+
+
+
