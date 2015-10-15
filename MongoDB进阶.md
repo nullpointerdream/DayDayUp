@@ -101,5 +101,19 @@ GridFS是mongo中存储大的二进制文件的机制。
         
 可以通过mongo各个版本的驱动来使用gridfs
 
+### 服务器端脚本
+db.eval来执行javascript脚本。  
 
-        
+        > db.eval("return 1")
+        1
+        > db.eval("function(){return 1}")
+        1
+        > 
+可以封装成函数，也可以不封装。等价的。但是如果需要传递参数，那就只能用函数形式了。参数所谓eval的第二个参数，写成数组的形式。 
+
+在mongo数据库中有一个特殊的集合system.js用来存储全局js变量或者脚本。用insert加入。
+
+
+## mongo的管理
+
+
