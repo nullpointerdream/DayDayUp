@@ -115,5 +115,44 @@ db.eval来执行javascript脚本。
 
 
 ## mongo的管理
+mongod  
+mongod --help查看所有参数，其中  
+`--dbpath arg                directory for datafiles - defaults to /data/db`  
+默认是/data/db，但是每个mongod进程都要求有各种独立的不同的存放数据目录，每个mongod启动时，会在自己的数据目录下创建一个mongod.lock文件，不让其他的mongod使用。比如启动了一个使用默认目录的mongod，再起一个会报` exception in initAndListen: 10310 Unable to lock file: /data/db/mongod.lock. Is a mongod instance already running?, terminating`。  
 
+`  --port arg                  specify port number - 27017 by default`  
+和数据目录一样，每个mongod进程的端口不能一样。一样会报错。
+
+`--fork                      fork server process`  
+以守护进程的方式运行mongo  
+
+`--logpath arg               log file to send write to instead of stdout - has to be a file, not directory`  
+指定日志输出。arg需要是一个文件。如果对文件所在的文件夹有写权限的时候，文件不存在会自动创建。会对以前的日志覆盖掉。如果不想覆盖掉，还要指定`--logappend                 append to logpath instead of over-writing`选项。
+
+`-f [ --config ] arg         configuration file specifying additional options`  
+可以指定配置文件  
+如：
+
+        # 以#注释行，键值对形式，区分大小写的。
+        port = 1111
+        # fork这种要指定true
+        fork = true
+
+### 停止mongo
+1. 可以终止mongod进程。  
+
+        mongo:~/mongodb # ps -ef | grep mongod
+        root      6521     1  0 Oct05 ?        00:55:26 ./mongod --fork --logpath /root/mongodb/logs
+        root     32054 31414  0 14:42 pts/0    00:00:00 grep mongod
+
+然后kill 6521 或者kill -2 6521。  
+注意不要用kill -9 6521这种暴力形式，这回这就终止mongod。不会等到正在执行的操作结束，造成数据损毁。  
+
+2. 用mongo提供的shutdown命令  
+必须切换到admin数据库  
+
+        > use admin
+        switched to db admin
+        > db.shutdownServer()
+ 
 
