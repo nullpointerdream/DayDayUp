@@ -99,5 +99,7 @@ GridFS是mongo中存储大的二进制文件的机制。
         mongo:~/mongodb/mongo/bin # ./mongofiles list
         connected to: 127.0.0.1
         
+可以通过mongo各个版本的驱动来使用gridfs
+
 
         
