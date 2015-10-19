@@ -59,3 +59,77 @@ object.wait会释放对象锁。所以在wait之前，希望暂停的线程应�
 	9. 可以被挂起。
 	10. 可以停止。  
 最后这两种已经废弃不用，可能会让对象处于不一致状态。
+
+### 线程池
+        ExecutorService pool = Executors.newFixedThreadPool(4);
+        
+        // 完成所有等待的任务后结束
+        pool.shutdown();
+        
+        // 立即停止，返回未执行的任务
+        pool.shutdownNow();
+
+## IP地址
+- ipv4。4个字节的无符号数。点分十进制。
+- ipv6。16字节长。冒号分隔8个区块。每块2个字节，作为4个16进制数。  
+0的简写形式。  
+
+### InetAddress类
+java.net.InetAddress是java对ip地址(包括ipv4和ipv6)的高层表示。
+
+        try
+        {
+            InetAddress address = InetAddress.getByName("www.baidu.com");
+            System.out.println(address);
+        }
+        catch (UnknownHostException e)
+        {
+            // TODO Auto-generated catch block
+            System.out.println("can't find ...");
+        }
+
+
+	www.baidu.com/112.80.248.74
+  
+这个方法第一次调用时，会和本地的DNS服务器建立连接，来查名字和地址。然后会缓存起来，下一次查就不会建立网络连接了，直接查缓存。
+
+	InetAddress[] allByName = InetAddress.getAllByName("www.baidu.com");
+
+使用`getAllByName`返回所有服务器的地址。  
+
+使用`InetAddress.getLocalHost()`返回本机地址。  
+
+使用`getByAddress(byte[] paramArrayOfByte)`或者`getByAddress(String paramString,byte[] paramArrayOfByte)`直接设定地址，不与DNS连接查询。  
+
+            InetAddress local = InetAddress.getByAddress(new byte[] {(byte) 192, (byte) 168, 0,
+                    (byte) 243});
+
+
+java对不成功的DNS查询只缓存10秒。
+
+		java.security.Security.setProperty("networkaddress.cache.ttl", "-1");
+        System.out.println(java.security.Security.getProperty("networkaddress.cache.ttl"));
+
+        java.security.Security.setProperty("networkaddress.negative.ttl", "10");
+        System.out.println(java.security.Security.getProperty("networkaddress.negative.ttl"));
+
+可以通过对系统参数的设置来控制缓存的时间。
+
+当使用`getByName`然后以ip传为参数时，不会查DNS，所以也可以使用实际不存在的ip创建inetaddress对象。域名相对ip地址来说要稳定的多，优先选用域名。  
+
+            InetAddress localHost = InetAddress.getLocalHost();
+            // 知道主机名，不查DNS
+            localHost.getHostName();
+            
+            // 知道主机名，也要去查DNS
+            localHost.getCanonicalHostName();
+
+`getAddress`方法返回的是byte[]，因为java中没有无符号字节，所以大于127的会被当做负数，要做一下转换：`b >= 0 ? b : b + 256`  
+
+- 使用`isReachable(int timeout)`或者`isReachable(NetworkInterface interface, int ttl , int timeout)`来判断ip是否可达。
+
+- InetAddress类重写的equals和hashcode方法都是只根据ip地址来处理，即ip地址相同的两个InetAddress对象就是相等的，不管主机名是啥。  
+
+- Inet4Address和Inet6Address是InetAddress的子类，一般不用。判断getAddress()返回的字节数组的大小就可以了。  
+
+- 
