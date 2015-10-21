@@ -132,4 +132,45 @@ java对不成功的DNS查询只缓存10秒。
 
 - Inet4Address和Inet6Address是InetAddress的子类，一般不用。判断getAddress()返回的字节数组的大小就可以了。  
 
-- 
+### NetworkInterface类
+NetworkInterface代表网卡，不能随便构造。提供了很多静态方法。  
+
+## URL
+- URL由ASCII字母数字组成[a-zA-Z0-9]。还可以使用-_.!~。定界符/？&=有特殊意义。希望所谓普通字符需要%转义。非ASCII字符用%转义后面跟该字符的UTF-8编码的十六进制码。
+
+- URI会告诉你这个资源是什么，但是不能告诉你资源的地址和获取方式，这是URI和URL的区别。
+
+- URL中访问的资源如果是映射到服务器的文件系统。那么资源的路径是相对于服务器指定的可访问资源的文档根目录，而不是服务器的系统根目录。  
+
+- java.net.URL类是不可变的。构造一个URL对象后，其字段就是不变的，是线程安全的。  
+
+### 从url获取数据
+几个关键方法：`openStream`,`openConnection`,`getContent`
+
+### 分解url
+URL提供了几个分解url获取各部分的方法。见api。  
+其中getPath和getFile容易混淆，这两个方法都会返回完整的路径加文件名，区别是getFile连查询部分都会返回。  
+
+### 比较URL
+URL的equals方法，会调用DNS去解析主机是否相等。这说明URL的equals的方法是阻塞的！！也不会比较URL标示的资源是否是一样的。他只是字面上去比较。  
+
+在编码时首先URI类，他的equals方法不是阻塞的。URL主要用于从服务器下载内容。有toURL方法。
+
+### URL编码
+`System.out.println(URLEncoder.encode("to encode*to+to%to汉字", "utf-8"));`  
+输出：`to+encode*to%2Bto%25to%E6%B1%89%E5%AD%97`   
+一般选择转成utf-8.适用性更好。  
+问题在于，encode盲目的进行编码。对特殊字符/&=:也直接编码了，所以通常的用法不是直接对整个url编码，而是分段编码。
+
+### 代理
+基于URl的java程序可以使用大多数常见的代理服务器和协议，出于这个原因，应该使用URL类。
+
+
+## URI
+和URL类相比，URI类的相关规范更一致，URI类没有网络获取功能，主要用于解析和处理字符串。  
+
+- URI使用的字符不限于ASCII，还可以使用unicode字符。
+
+- URI实现了Comparable接口，因此可以排序。
+
+- URL的equals不区分大小写，和URL不同的是，URI不是单纯的字符串比较。另外转义在比较之前不解码。
