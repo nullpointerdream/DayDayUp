@@ -87,3 +87,84 @@ httponly ： 也是一个无值的属性，告诉浏览器只通过http和https�
 - CookieStore用来存放cookie
 `        CookieStore cookieStore = cookieManager.getCookieStore();`
 然后就可以增删查HttpCookie。
+
+## URLConnection
+URL类和URLConnection之间的区别并不明显，URLConnection提供了对http首部的访问，可以配置发送给服务器的请求参数，除了可以读取服务器数据外，还可以向服务器写入数据。  
+
+- http默认的编码方式是iso-8859-1
+- 手动断开连接，`disconnect()` 
+
+            URL myUrl = new URL("http://www.yunsheng.com/cn/");
+            URLConnection connection = myUrl.openConnection();
+            HttpURLConnection httpURLConnection = (HttpURLConnection) connection;
+            httpURLConnection.disconnect();
+
+## 客户端Socket
+Socket使我们可以将网络连接看作是另外一个可以读写字节的流。隐藏了网络实现的细节。  
+Socket类是java完成客户端TCP操作的基础类，这个类本身使用原始代码与主机操作系统的本地TCP栈进行通信。
+
+### 使用socket
+socket是两台机器之间的一个连接，它完成7个基本操作。
+
+- 连接远程机器
+- 发送数据
+- 接收数据
+- 关闭连接  
+这四个是客户端和服务器端socket都可用的
+- 绑定端口
+- 监听入站数据
+- 在绑定端口上接受来自远程机器的连接。  
+这三个只有服务器端socket可用。  
+连接是全双工的。  
+
+ 		try (Socket socket = new Socket("localhost", 8080))
+        {
+            // 建议为连接设置超时时间单位毫秒
+            // 防止服务器接受了连接，但是之后出问题了，一直连接但是又没有响应，又不会断开。
+            socket.setSoTimeout(10000);
+            // 接受服务器信息
+            InputStream in = socket.getInputStream();
+            Reader r = new InputStreamReader(in, "UTF-8");
+            BufferedReader reader = new BufferedReader(r);
+            for (String line = reader.readLine(); !line.equals("."); line = reader
+                    .readLine())
+            {
+                System.out.println(line);
+            }
+
+            // 向服务器发送消息
+            OutputStream out = socket.getOutputStream();
+            Writer writer = new OutputStreamWriter(out, "UTF-8");
+            writer.write("hello,yunsheng");
+            writer.flush();
+
+        }
+- 前面用的socket构造器是构造对象且连接的。  
+还有其他构造器只构造，不连接。分步来。
+
+		Socket s = new Socket();
+        // SocketAddress存储socket连接信息
+        SocketAddress addr = new InetSocketAddress("localhost", 8888);
+        try
+        {
+            // 第二个参数是超时时间，0表示无限等待
+            s.connect(addr, 0);
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+可以用SocketAddress存储已经连接的地址信息，以备下次再用。
+
+            SocketAddress localAddr = s.getLocalSocketAddress();
+            SocketAddress remoteAddr = s.getRemoteSocketAddress();
+###关闭
+- socket的close()方法同时关闭socket，以及socket的输入和输出。所以只要在finally中close掉socket就好。
+- shutdownInput()方法和shutdownOutput()方法可以只关闭一半，并不会关闭socket。
+- 即使shutdown了input和output，仍然需要手动关闭socket。那两个只关闭流。
+- 可以用isInputShutdown()和isOutputShutdown()方法确认流的状态。
+- 用isClosed()判断socket是否关闭。不过如果一个socket从一开始从未连接，那么isClosed()返回false。
+- isConnected()方法，这个方法不是返回当前是否连接着，而是返回是否曾经连接过。。。所以判断一个socket当前是否连接着，应该是isConnected返回true，isClosed()返回false。
+- isBound()方法返回当前socket是否成功绑定到本地系统上的出端口，这对server端socket很重要。
