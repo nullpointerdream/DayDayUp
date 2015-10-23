@@ -168,3 +168,15 @@ socket是两台机器之间的一个连接，它完成7个基本操作。
 - 用isClosed()判断socket是否关闭。不过如果一个socket从一开始从未连接，那么isClosed()返回false。
 - isConnected()方法，这个方法不是返回当前是否连接着，而是返回是否曾经连接过。。。所以判断一个socket当前是否连接着，应该是isConnected返回true，isClosed()返回false。
 - isBound()方法返回当前socket是否成功绑定到本地系统上的出端口，这对server端socket很重要。
+
+### 设置socket选项
+指定java所依赖的原生socket如何发送和接受数据。客户端socket支持9个选项。
+
+- `s.setTcpNoDelay(true);`确保包尽可能快的发送，而不管包的大小。包一旦准备好就发，不再去缓冲。
+- `s.setSoLinger(true, 0);`设置socket关闭时，如何处理还没发送的数据报。默认的，close()方法将立即返回，但系统仍然会尝试发送剩下的数据。当延迟设置为0时，那么关闭socket时，未发送的会被直接丢弃。设置为正数，阻塞这么多秒去尝试发送。
+- `s.setSoTimeout(0);`默认下，从socket读取数据时，read()会阻塞尽可能长的时间。这个方法设置阻塞时间。
+- `s.setReceiveBufferSize(1000);s.setSendBufferSize(1000);`设置缓冲区的大小。
+
+- `s.setKeepAlive(true);`打开这个功能后，客户端一般每两个小时会通过一个空闲的连接，发送一个空包，以确认服务器没有挂掉。如果挂掉了，尝试12分钟之后，会干掉这个socket。如果不开启这个功能，那么连接着挂掉的服务器的socket会一直存在下去。
+
+- `s.setOOBInline(true);`设置可以接收处理紧急数据
