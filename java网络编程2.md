@@ -180,3 +180,142 @@ socket是两台机器之间的一个连接，它完成7个基本操作。
 - `s.setKeepAlive(true);`打开这个功能后，客户端一般每两个小时会通过一个空闲的连接，发送一个空包，以确认服务器没有挂掉。如果挂掉了，尝试12分钟之后，会干掉这个socket。如果不开启这个功能，那么连接着挂掉的服务器的socket会一直存在下去。
 
 - `s.setOOBInline(true);`设置可以接收处理紧急数据
+## ServerSocket
+### 基本使用
+    // 服务器端socket基本生命周期如下
+    public static void main(String[] args)
+    {
+        ServerSocket serverSocket = null;
+        try
+        {
+            // 1，在特定端口创建一个serverSocket
+            serverSocket = new ServerSocket(8888);
+            System.out.println("start server socket=================");
+
+            while (true)
+            {
+                // 2，使用accept()方法监听入站连接，accept()会一直阻塞，直到有一个客户端尝试连接，accept()会返回一个Socket
+                Socket clientSocket = null;
+                try
+                {
+                    // 区分server端和client的异常
+                    clientSocket = serverSocket.accept();
+                    System.out.println("get a connection----------");
+                    // 3,根据服务的不同，调用clientSocket的getOutputStream()或getInputStream()得到客户端的输入或输出
+                    OutputStream outputStream = clientSocket.getOutputStream();
+                    InputStream inputStream = clientSocket.getInputStream();
+
+                    // 4,得到输入输出流之后，开始交互
+                    Reader reader = new InputStreamReader(inputStream);
+                    BufferedReader bufferedReader = new BufferedReader(reader);
+                    Writer writer = new OutputStreamWriter(outputStream);
+                    StringBuilder content = new StringBuilder();
+                    for (String line = bufferedReader.readLine(); !line
+                            .equals(""); line = bufferedReader.readLine())
+                    {
+                        content.append(line);
+                    }
+                    writer.write("content is : " + content.toString());
+                    writer.flush();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+                finally
+                {
+                    if (null != clientSocket)
+                    {
+                        // 5,双方有一方或者双方都关闭连接
+                        // 服务器端不要依赖客户端一定会关闭socket。自己控制。
+                        clientSocket.close();
+                    }
+                }
+            }
+            // 6,服务端返回状态2
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        finally
+        {
+            if (null != serverSocket)
+            {
+                try
+                {
+                    serverSocket.close();
+                }
+                catch (IOException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+### 多线程使用
+操作系统将指向某个特定端口的入站请求存储在一个FIFO的队列中，java默认的长度是50，但不同的操作系统会有不同。队列长度最大不能超过操作系统支持的最大大小。
+
+    @Test
+    public void test1()
+    {
+        ExecutorService pool = Executors.newFixedThreadPool(50);
+        try (ServerSocket serverSocket = new ServerSocket(8888))
+        {
+            while (true)
+            {
+                Socket connection = serverSocket.accept();
+                ThreadTask task = new ThreadTask(connection);
+                pool.submit(task);
+            }
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    private static class ThreadTask implements Callable<Void>
+    {
+
+        Socket socket;
+
+        public ThreadTask(Socket connection)
+        {
+            this.socket = connection;
+        }
+
+        @Override
+        public Void call() throws Exception
+        {
+            try
+            {
+                Writer out = new OutputStreamWriter(socket.getOutputStream());
+                out.write("hello,yunsheng");
+                out.flush();
+            }
+            finally
+            {
+                if (null != socket)
+                {
+                    try
+                    {
+                        socket.close();
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            return null;
+
+        }
+
+    }
