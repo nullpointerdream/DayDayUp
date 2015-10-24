@@ -227,7 +227,7 @@ socket是两台机器之间的一个连接，它完成7个基本操作。
                     if (null != clientSocket)
                     {
                         // 5,双方有一方或者双方都关闭连接
-                        // 服务器端不要依赖客户端一定会关闭socket。自己控制。
+                        // 服务器端不要依赖客户端一定会关闭socket。可以自己控制。
                         clientSocket.close();
                     }
                 }
