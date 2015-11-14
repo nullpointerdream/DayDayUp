@@ -320,4 +320,6 @@ socket是两台机器之间的一个连接，它完成7个基本操作。
 
     }
 ### 关闭
-java7中ServerSocket类实现了AutoCloseable接口。所以可以使用try-with-resource模式。低版本的jdk注意还是要用try-finally中if-not-null模式关闭。
+java7中ServerSocket类实现了AutoCloseable接口。所以可以使用try-with-resource模式。低版本的jdk注意还是要用try-finally中if-not-null模式关闭。  
+close()之后，可以使用isClosed()方法检查。  
+注意isBound()方法可检查该serverSocket是否已经绑定了端口，但是同socket一样，如果曾经绑定过，但是该serversocket已经关掉了，isBound仍然返回true。  
