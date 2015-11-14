@@ -319,3 +319,5 @@ socket是两台机器之间的一个连接，它完成7个基本操作。
         }
 
     }
+### 关闭
+java7中ServerSocket类实现了AutoCloseable接口。所以可以使用try-with-resource模式。低版本的jdk注意还是要用try-finally中if-not-null模式关闭。
