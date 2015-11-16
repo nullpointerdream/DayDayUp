@@ -31,3 +31,10 @@ dog | bird | cat
 foo | foo  | foo
 bar | bar  | bar
 baz | baz  | baz
+
+### 超链接
+
+```
+[markdown语法参考](http://ibruce.info/2013/11/26/markdown/)
+```  
+[markdown语法参考](http://ibruce.info/2013/11/26/markdown/)
