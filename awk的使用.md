@@ -110,3 +110,7 @@ awk 也可以向grep一样去匹配，不指定列，全行匹配。（也可加
         unix  3      [ ]         STREAM     CONNECTED     15216  
         unix  3      [ ]         STREAM     CONNECTED     13725  @/tmp/dbus-PKZYiwWjts
 
+### 高级用法
+拆分文件  
+统计  
+脚本  
