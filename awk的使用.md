@@ -1,5 +1,5 @@
 ## awk的使用
-
+[参考](http://coolshell.cn/articles/9070.html)
 ### 内置变量
 
 变量名         | 说明          | 
