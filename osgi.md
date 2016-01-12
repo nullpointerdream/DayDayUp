@@ -12,7 +12,6 @@
 
 3. bundle的生命周期
 ![bundle状态](http://tmy-course.oss-cn-beijing.aliyuncs.com/osgi-toturial%2F03%2F00005.jpg)
-
 生命周期层的基础实施：
 
         public interface BundleActivator {
@@ -22,10 +21,9 @@
         
 当bundle的状态属于active时，BundleContext才有意义。  
 为了bundle的安全和资源分配，不能随意传到bundlecontext。  
-
 Bundle定义了一系列api，用于管理bundle的生命周期。  
 
-4. bundleId越大，bundle的启动顺序越靠后。只有系统bundle（system bundle）的bundleId可以为0。
-5. 
+4.bundleId越大，bundle的启动顺序越靠后。只有系统bundle（system bundle）的bundleId可以为0。
+
 
 
