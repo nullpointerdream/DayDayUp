@@ -18,7 +18,6 @@
           public void start(BundleContext context) throws Exception;
           public void stop(BundleContext context) throws Exception;
         }
-        
 当bundle的状态属于active时，BundleContext才有意义。  
 为了bundle的安全和资源分配，不能随意传到bundlecontext。  
 Bundle定义了一系列api，用于管理bundle的生命周期。  
