@@ -276,12 +276,14 @@ maven默认的jdk版本是1.5，所以我们引入或者新建的maven项目，�
 	</project>
 	```
 注意，`module`标签查找子项目依然使用相对路径，也就是说上例中的文件关系(使用artifactId作为文件夹名)应该是
+
 ```
 -- my-module
  |   `-- pom.xml
  `-- pom.xml
 ```
 所以如果是
+
 ```
 .
  |-- my-module
@@ -290,3 +292,8 @@ maven默认的jdk版本是1.5，所以我们引入或者新建的maven项目，�
      `-- pom.xml
 ```
 应该相应的使用```<module>../my-module</module>```
+
+## 其他
+### dependencyManagement
+把所依赖jar包的版本定义在```<dependencyManagement>```中,而不是```<dependencies>```中。 因为前者可影响间接依赖,后者只能影响直接依赖。
+如果你的项目指定了parent pom,那么建议把```<dependencyManagement>```放在parent pom中,以便多个子项目共享配置。
