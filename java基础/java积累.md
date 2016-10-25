@@ -153,3 +153,6 @@ final只对引用的"值"(即内存地址)有效，它迫使引用只能指向�
 ### 13,得到系统的cpu核数
 `Runtime.getRuntime().availableProcessors()`
 
+### 14，对象toString
+如果得到的对象没有实现toString(),不需要自己反射实现。apache已经有写好的：`org.apache.commons.lang.builder.ToStringBuilder.reflectionToString(Object)`
+很好用。
