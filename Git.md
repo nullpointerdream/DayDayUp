@@ -64,5 +64,8 @@ git push origin --delete 远程分支名。：删除远程分支。
 这样一来就可以实现未提交代码迁移到另外一个分支上去  
 
 
-
+------
+#### 批量删除本地分支
+借助linux的管道方式  
+> git branch | grep 'bran' | xargs git branch -d
 
