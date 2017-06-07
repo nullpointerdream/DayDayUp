@@ -25,6 +25,7 @@ Producer轮询某topic下的所有队列的方式来实现发送方的负载均�
 
 #### 消息存储
 RocketMQ的消息存储是由consume queue和commit log配合完成的。  
+consumerQueue中只存储很少的数据，消息主体都是通过CommitLog来进行读写。  
 consume queue 是逻辑队列。用来指定消息在物理文件commit log上的位置。  
 commit log 是物理文件。  
 

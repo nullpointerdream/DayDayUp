@@ -1,51 +1,78 @@
 ## 常用的JVM参数（jdk7）
-### 1) 跟 Java 堆大小相关的 JVM 内存参数 
 
-下面三个 JVM 参数用来指定堆的初始大小和最大值以及堆栈大小 
+### 堆设置
 
--Xms        设置 Java 堆的初始化大小  
--Xmx        设置最大的 Java 堆大小   
--Xss        设置Java线程堆栈大小   
+-Xms:初始堆大小
 
-### 2) 关于打印垃圾收集器详情的 JVM 参数 
+-Xmx:最大堆大小
 
--verbose:gc 记录 GC 运行以及运行时间，一般用来查看 GC 是否是应用的瓶颈   
+-XX:NewSize=n:设置年轻代大小
+
+-XX:NewRatio=n:设置年轻代和年老代的比值。如:为3，表示年轻代与年老代比值为1：3，年轻代占整个年轻代年老代和的1/4
+
+-XX:SurvivorRatio=n:年轻代中Eden区与两个Survivor区的比值。注意Survivor区有两个。如：3，表示Eden：Survivor=3：2，一个Survivor区占整个年轻代的1/5
+
+-XX:MaxPermSize=n:设置持久代大小
+
+### 栈设置
+-Xss        设置Java线程堆栈大小 。默认是1M，一般不需要这么大，256k足够。栈小一点可以创建更多的线程。  
+
+### 收集器设置
+
+-XX:+UseSerialGC:设置串行收集器
+
+-XX:+UseParallelGC:设置并行年轻代收集器
+
+-XX:+UseParalledlOldGC:设置并行年老代收集器
+
+-XX:+UseConcMarkSweepGC:设置并发收集器（标记清楚）
+
+### 垃圾回收统计信息
+
+-verbose:gc 记录 GC 运行以及运行时间，一般用来查看 GC 是否是应用的瓶颈
+
+-XX:+PrintGC
 
 -XX:+PrintGCDetails 记录 GC 运行时的详细数据信息，包括新生成对象的占用内存大小以及耗费时间等   
 
--XX:-PrintGCTimeStamps  打印垃圾收集的时间戳   
+-XX:+PrintGCTimeStamps  打印垃圾收集的时间戳
 
+-Xloggc:filename 日志位置
 
+### 并行收集器设置
 
-### 3) 设置 Java 垃圾收集器行为的 JVM 参数 
+-XX:ParallelGCThreads=n:设置并行收集器收集时使用的CPU数。并行收集线程数。
 
--XX:+UseParallelGC      使用并行垃圾收集   
+-XX:MaxGCPauseMillis=n:设置并行收集最大暂停时间
 
--XX:-UseConcMarkSweepGC 使用并发标志扫描收集 (Introduced in 1.4.1)   
+-XX:GCTimeRatio=n:设置垃圾回收时间占程序运行时间的百分比。公式为1/(1+n)
 
--XX:-UseSerialGC        使用串行垃圾收集 (Introduced in 5.0.)   
+### 并发收集器设置
 
-需要提醒的是，但你的应用是非常关键的、交易非常频繁应用时，应该谨慎使用 GC 参数，因为 GC 操作是耗时的，你需要在这之中找到平衡点。   
+-XX:+CMSIncrementalMode:设置为增量模式。适用于单CPU情况。
 
-### 4) JVM 调试参数，用于开启远程调试 
+-XX:ParallelGCThreads=n:设置并发收集器年轻代收集方式为并行收集时，使用的CPU数。并行收集线程数。
+  
+
+### 开启远程调试 
 
 -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000   
 
 
-### 5) 关于性能诊断的 JVM 参数 
+### 关于性能诊断的 JVM 参数 
 
 -Xprof 
 
 -Xrunhprof 
 
 
-### 6) 关于类路径方面的 JVM 参数 
+### 关于类路径方面的 JVM 参数 
 
 Xbootclasspath 用来指定你需要加载，但不想通过校验的类路径。JVM 会对所有的类在加载前进行校验并为每个类通过一个int数值来应用。这个是保证 JVM 稳定的必要过程，但比较耗时，如果你希望跳过这个过程，就把你的类通过这个参数来指定。 
 
 
 
-### 7) 用于修改 Perm Gen 大小的 JVM 参数 
+### 用于修改 Perm Gen 大小的 JVM 参数 
 
 下面的这三个参数主要用来解决 JVM 错误：[url]java.lang.OutOfMemoryError:Perm Gen Space.[/url] 
 
@@ -71,3 +98,4 @@ Xbootclasspath 用来指定你需要加载，但不想通过校验的类路径�
 -XX:-PrintConcurrentLocks       Print java.util.concurrent locks in Ctrl-Break thread dump. 
 
 -XX:-PrintCommandLineFlags   Print flags that appeared on the command line. 
+
