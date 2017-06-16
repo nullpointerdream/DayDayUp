@@ -38,3 +38,6 @@ baz | baz  | baz
 [markdown语法参考](http://ibruce.info/2013/11/26/markdown/)
 ```  
 [markdown语法参考](http://ibruce.info/2013/11/26/markdown/)
+
+### 图片
+`![](图片地址)` 相比于超链接前加了个叹号
