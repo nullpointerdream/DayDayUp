@@ -63,9 +63,22 @@ leader处理所有的读写请求，follower只是被动的同步。一旦leader
 consumer以consumer group进行标记，即consumer使分组的。topic下的每一个消息会被分发到每个组下的一个consumer实例。  
 如果所有的consumer都在一个组下，那么消息会在这些consumer下进行充分的负载均衡。  
 如果每一个consumer都是不同的组，那么消息就是广播模式，一个消息会被所有consumer都消费一次。  
-![](consumer-groups.png)
+![](consumer-groups.png)  
 这是一个由两个server组成的kafka集群。每个server有两个分区，一共4个分区。  
 下面挂了6个consumer，分成2组，group A有2个consumer，group B有4个consumer。  
+
+通常来讲，一般只会有比较少的consumer group。一般是基于业务的分组。每个分布理由多个consumer实例，以备容错。这其实就是个简单的发布-订阅模型，只不过订阅者不是单个实例，而是一个集群。  
+
+如前面所讲，kafka将分区的消费权分配给每个consumer group下的一个consumer实例，该实例独享 
+该分区的消费权。这种消费关系是有kafka动态管理的。加入一个新的consumer实例，kafka会给他从其他consumer那里取代一些分布。如果某个consumer挂了，这个consumer负责的分区kafka也会动态的切换给其他consumer。  
+
+kafka只能保证在一个分区里的消息是顺序的，不能保证跨分区的消息是顺序的。所以，如果业务上要求严格的顺序消息，只能使用一个分区，这也意味着consumer group里只能用一个consumer，因为用多个consumer又不能保证消费的严格顺序性了。  
+
+#### Guarantees可靠性
+kafka可以提供如下的可靠性保证：  
+1. 消息在特定分区的顺序和他被发送的顺序是一样的。即，如果M1和M2都是同一个producer发送到同一个分区，M1先发送，那么可以保证在改分区中，M1的偏移量一定比M2小，M1一定在log的更靠前的位置。  
+2. consumer看到的消息顺序和消息在log中存储的顺序是一样的。  
+3. 如果一个topic又n个备份，可以保证及时n-1个server挂掉，也不会丢失已经提交的消息。  
 
 
 
