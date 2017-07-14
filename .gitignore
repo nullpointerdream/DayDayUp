@@ -1,0 +1,5 @@
+
+*.jar
+*.jar
+java/springboot/bookpub/.mvn/wrapper/maven-wrapper.jar
+java/springboot/bookpub/mvnw
