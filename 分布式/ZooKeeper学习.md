@@ -21,12 +21,36 @@ client只会连到一台server，client和server间保持tcp连接，以发送�
 前面讲了，非常像文件模型。每一个node都以路径来唯一标识。  
 ![](https://zookeeper.apache.org/doc/r3.4.6/images/zknamespace.jpg)  
 ZooKeeper的Node可以有子Node，也可以存储数据，存储的数据用来处理协同，主要有状态信息，配置，位置信息等，通常很小。一般将node称为znode。  
-znode存储的数据中有个版本号，一旦数据有更新，这个版本号会自增。client在此获取数据时，会得到新的版本号。  
+znode存储的数据中有个版本号，一旦数据有更新，这个版本号会自增。client在此获取数据时，会得到新的版本号。   
+znode是有版本的（version），每个znode中存储的数据可以有多个版本，也就是一个访问路径中可以存储多份数据，version号自动增加。     
 znode中数据的读写都是原子的。每个node都有访问控制列表acl来严格控制谁可以做什么。  
-还有一种临时node（ephemeral nodes),这个临时node的生存周期是创建它的session的生存周期，一旦这个session断掉，这个临时node就会被删除，这是很有用的一个特性，可以用来实现分布式锁。  
+还有一种临时node（ephemeral nodes),这个临时node的生存周期是创建它的session的生存周期，一旦这个session断掉，这个临时node就会被删除，这是很有用的一个特性，可以用来实现分布式锁。  注意EPHEMERAL（临时的）类型的目录节点不能有子节点目录。  
 
 ### 状态更新和监视
-client可以在znode上设置watch，当znode的状态变化时将触发watch。当client和server的连接断掉，client会收到本地提醒。  
+client可以在znode上设置watch，当znode的状态变化时将触发watch。当client和server的连接断掉，client会收到本地提醒。这个是Zookeeper的核心特性，Zookeeper的很多功能都是基于这个特性实现的。    
+
+Zookeeper watch是一种监听通知机制。Zookeeper所有的读操作getData(), getChildren()和 exists()都可以设置监视(watch)，监视事件可以理解为一次性的触发器，官方定义如下： a watch event is one-time trigger, sent to the client that set the watch, whichoccurs when the data for which the watch was set changes。Watch的三个关键点：
+
+- 一次性触发）One-time trigger
+
+当设置监视的数据发生改变时，该监视事件会被发送到客户端，例如，如果客户端调用了getData("/znode1", true) 并且稍后 /znode1 节点上的数据发生了改变或者被删除了，客户端将会获取到 /znode1 发生变化的监视事件，而如果 /znode1 再一次发生了变化，除非客户端再次对/znode1 设置监视，否则客户端不会收到事件通知。
+
+- 发送至客户端）Sent to the client
+
+Zookeeper客户端和服务端是通过 socket 进行通信的，由于网络存在故障，所以监视事件很有可能不会成功地到达客户端，监视事件是异步发送至监视者的，Zookeeper 本身提供了顺序保证(ordering guarantee)：即客户端只有首先看到了监视事件后，才会感知到它所设置监视的znode发生了变化(a client will never see a change for which it has set a watch until it first sees the watch event)。网络延迟或者其他因素可能导致不同的客户端在不同的时刻感知某一监视事件，但是不同的客户端所看到的一切具有一致的顺序。
+
+- 被设置 watch 的数据）The data for which the watch was set
+
+这意味着znode节点本身具有不同的改变方式。你也可以想象 Zookeeper 维护了两条监视链表：数据监视和子节点监视(data watches and child watches) getData() 和exists()设置数据监视，getChildren()设置子节点监视。或者你也可以想象 Zookeeper 设置的不同监视返回不同的数据，getData() 和 exists() 返回znode节点的相关信息，而getChildren() 返回子节点列表。因此，setData() 会触发设置在某一节点上所设置的数据监视（假定数据设置成功），而一次成功的create() 操作则会出发当前节点上所设置的数据监视以及父节点的子节点监视。一次成功的 delete操作将会触发当前节点的数据监视和子节点监视事件，同时也会触发该节点父节点的child watch。
+
+Zookeeper 中的监视是轻量级的，因此容易设置、维护和分发。当客户端与 Zookeeper 服务器失去联系时，客户端并不会收到监视事件的通知，只有当客户端重新连接后，若在必要的情况下，以前注册的监视会重新被注册并触发，对于开发人员来说这通常是透明的。只有一种情况会导致监视事件的丢失，即：通过exists()设置了某个znode节点的监视，但是如果某个客户端在此znode节点被创建和删除的时间间隔内与zookeeper服务器失去了联系，该客户端即使稍后重新连接 zookeeper服务器后也得不到事件通知。
+
+
+### session
+![](zk_session.jpg)
+如果Client因为Timeout和Zookeeper Server失去连接，client处在CONNECTING状态，会自动尝试再去连接Server，如果在session有效期内再次成功连接到某个Server，则回到CONNECTED状态。  
+
+注意：如果因为网络状态不好，client和Server失去联系，client会停留在当前状态，会尝试主动再次连接Zookeeper Server。client不能宣称自己的session expired，session expired是由Zookeeper Server来决定的，client可以选择自己主动关闭session。       
 
 ### 保证
 - 一致性。按照client发送请求的顺序执行。
