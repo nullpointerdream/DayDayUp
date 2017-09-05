@@ -1,4 +1,6 @@
 ## Zuul
+[代码地址：https://github.com/jedyang/springCloud](https://github.com/jedyang/springCloud)
+
 先来看一个简单的微服务架构图。
 ![](6.png)
 用户请求通过负载均衡nginx，网关路由zuul，到达服务层。服务统一注册在注册中心Eureka，配置项同意在配置中心管理，配置托管在git仓库。  
@@ -235,3 +237,207 @@ spring cloud的配置项管理是以托管在git仓库中的文件为存储介�
 4. 测试
 访问http://localhost:8768/getValue  
 得到配置的值
+
+### 集群化
+到现在为止，我们的配置服务是单点的，在生产环境要求高可用的情况下，是存在风险的。现在我们将其集群化。  
+集群化的方法也很简单，将服务注册到eureka，通过eureka服务调用。  
+
+这里我们还是复用之前的注册中心8761。
+
+1. 改造server端  
+在配置文件中加上  
+`eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka/`  
+指定服务注册地址  
+
+	启动类加上`@EnableEurekaClient`注解
+
+2. 改造client端  
+	添加依赖  	
+
+		<dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-eureka</artifactId>
+        </dependency>
+
+	修改配置  
+
+		spring.application.name=config-client
+		spring.cloud.config.label=master
+		spring.cloud.config.profile=dev
+		#spring.cloud.config.uri= http://localhost:8767/
+		server.port=8768
+		
+		eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka/
+		spring.cloud.config.discovery.enabled=true
+		spring.cloud.config.discovery.serviceId=config-server
+
+	可以看到，现在修改为通过serviceId来获取服务，如果有多个服务，可以实现集群化和负载均衡。  
+
+3.测试  
+tips：client端一定要在server启动成功后再起，因为需要从server获取配置，如果解析不到，会报错。  
+
+## 服务链路追踪
+在复杂业务系统中，排查问题是一件痛苦的事情，尤其是超时问题。你必须知道全链路的服务调用关系，以及服务花费的时间。  
+
+针对服务化应用全链路追踪的问题，Google发表了Dapper论文，介绍了他们如何进行服务追踪分析。其基本思路是在服务调用的请求和响应中加入ID，标明上下游请求的关系。利用这些信息，可以可视化地分析服务调用链路和服务间的依赖关系。  
+
+Zipkin是对Dapper论文的开源实现，Spring Cloud Sleuth对Zipkin进行了封装，以便加入spring cloud全家桶。  
+
+Spring Cloud Sleuth（以下简称sleuth）借用了Dapper的术语。 
+ 
+- span。简单的理解就是一个最小的服务单元。例如发送一个RPC请求是一个span，发送一个响应给RPC请求也是一个span。每个span用64bit的唯一id标示。span上会包含其他信息，如描述、注解（理解成标签），触发这个span的上一个span的id，最重要的时间信息。  
+
+- trace。就是有一个个span组成的调用链路。
+- annotion。我们javaer习惯称为注解，但是这里理解成标签比较合适。常用的核心标签：  
+	- cs，client sent
+	- sr，server received
+	- ss，server sent
+	- cr，client received
+	
+![](9.png) 
+可以理解，sr-cs=网络传输时间。ss-sr=服务处理时间。cr-cs得到整个服务需要的时间。  
+
+开始代码
+### zipkin server
+1. 新建一个工程zipkin-server  
+我的依赖如下：  
+	
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-starter-zipkin</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-web</artifactId>
+			</dependency>
+	
+			<dependency>
+				<groupId>io.zipkin.java</groupId>
+				<artifactId>zipkin-server</artifactId>
+			</dependency>
+	
+			<dependency>
+				<groupId>io.zipkin.java</groupId>
+				<artifactId>zipkin-autoconfigure-ui</artifactId>
+				<scope>runtime</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-test</artifactId>
+				<scope>test</scope>
+			</dependency>
+		</dependencies>
+
+里面的zipkin-server这个依赖，在idea创建的时候选不到，但是又是必须的。有知道的麻烦告诉我一下。  
+
+2. 代码  
+启动器加注解`@EnableZipkinServer`
+
+3. 配置  
+加一下端口server.port=9411  
+最好使用这个端口，应该是有依赖关系。我换成其他的会报错。还不清楚具体怎么依赖的。  
+
+### 创建相互调用的服务  
+我创建了两个工程。app1和app2。
+
+1. 依赖  
+
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-starter-zipkin</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-web</artifactId>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-test</artifactId>
+				<scope>test</scope>
+			</dependency>
+		</dependencies>
+
+2. 代码
+
+	App1：
+
+		@SpringBootApplication
+		@RestController
+		public class App1Application {
+		
+		    public static void main(String[] args) {
+		        SpringApplication.run(App1Application.class, args);
+		    }
+		
+		    @Autowired
+		    private RestTemplate restTemplate;
+		
+		    @Bean
+		    public RestTemplate getRestTemplate() {
+		        return new RestTemplate();
+		    }
+		
+		    @RequestMapping("/hi1")
+		    public String callHi1() {
+		        return restTemplate.getForObject("http://localhost:9002/hi2", String.class);
+		    }
+		
+		    @RequestMapping("/hi3")
+		    public String callHi3() {
+		
+		        return "i'm hi 33333";
+		
+		    }
+		}
+
+	App2：
+		
+		@SpringBootApplication
+		@RestController
+		public class ZipkinApp2Application {
+		
+			public static void main(String[] args) {
+				SpringApplication.run(ZipkinApp2Application.class, args);
+			}
+		
+			@Autowired
+			private RestTemplate restTemplate;
+		
+			@Bean
+			public RestTemplate getRestTemplate(){
+				return new RestTemplate();
+			}
+		
+			@RequestMapping("/hi2")
+			public String callHi2(){
+				return restTemplate.getForObject("http://localhost:9001/hi3", String.class);
+			}
+		}
+
+3. 配置
+
+	APP1：
+
+		server.port=9001
+		spring.zipkin.base-url=http://localhost:9411
+		spring.application.name=service-app1
+
+	APP2：
+	
+		server.port=9002
+		spring.zipkin.base-url=http://localhost:9411
+		spring.application.name=service-app2
+
+就是hi1-->hi2-->hi3
+
+依次启动服务。  
+
+查看http://localhost:9411/zipkin/  
+![](10.png)
+
+看一条链路  
+![](11.png)
+可以看到时间和标签
