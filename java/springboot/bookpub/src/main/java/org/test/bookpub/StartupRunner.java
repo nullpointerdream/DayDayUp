@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.test.bookpub.entity.Author;
+import org.test.bookpub.entity.Book;
+import org.test.bookpub.entity.Publisher;
 import org.test.bookpub.repository.BookRepository;
 
 import javax.sql.DataSource;
@@ -15,9 +18,9 @@ import javax.sql.DataSource;
  */
 
 @Order(value = 1)
-public class StartupRunner implements CommandLineRunner{
+public class StartupRunner implements CommandLineRunner {
 
-    protected  final Log logger = LogFactory.getLog(getClass());
+    protected final Log logger = LogFactory.getLog(getClass());
 
     @Autowired
     private DataSource ds;
@@ -27,12 +30,12 @@ public class StartupRunner implements CommandLineRunner{
 
     @Override
     public void run(String... strings) throws Exception {
-//        logger.info("dataSource:" + ds.toString());
+        logger.info("dataSource:" + ds.toString());
         logger.info("number of books:" + bookRepository.count());
     }
 
     @Scheduled(initialDelay = 1000, fixedRate = 10000)
-    public void run(){
+    public void run() {
         logger.info("number of books:" + bookRepository.count());
     }
 }

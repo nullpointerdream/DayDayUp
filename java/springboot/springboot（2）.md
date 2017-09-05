@@ -1,3 +1,7 @@
+>  个人积累，请勿私自转载，转载前请联系  
+>  代码及文章资源[https://github.com/jedyang/DayDayUp/tree/master/java/springboot](https://github.com/jedyang/DayDayUp/tree/master/java/springboot)  
+>  基于SpringBootCookBook的读书笔记，重在个人理解和实践，而非翻译。
+
 ## WEB工程
 ### 创建一个基本的RESTful应用
 目前的软件一般都是围绕web服务，或者数据服务等来构建的，下面我们继续前面的代码，构建一个基本的Restful应用。  

@@ -15,12 +15,12 @@ public class BookController {
     private BookRepository bookRepository;
 
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public Iterable<Book> getAllBooks(){
+    public Iterable<Book> getAllBooks() {
         return bookRepository.findAll();
     }
 
     @RequestMapping(value = "/{isbn}", method = RequestMethod.GET)
-    public Book getBook(@PathVariable String isbn){
+    public Book getBook(@PathVariable String isbn) {
         return bookRepository.findByIsbn(isbn);
     }
 }
