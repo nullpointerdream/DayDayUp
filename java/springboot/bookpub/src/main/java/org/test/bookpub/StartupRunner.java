@@ -9,7 +9,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.test.bookpub.entity.Author;
 import org.test.bookpub.entity.Book;
 import org.test.bookpub.entity.Publisher;
+import org.test.bookpub.repository.AuthorRepository;
 import org.test.bookpub.repository.BookRepository;
+import org.test.bookpub.repository.PublisherRepository;
 
 import javax.sql.DataSource;
 
@@ -28,9 +30,22 @@ public class StartupRunner implements CommandLineRunner {
     @Autowired
     private BookRepository bookRepository;
 
+    @Autowired
+    private AuthorRepository authorRepository;
+
+    @Autowired
+    private PublisherRepository publisherRepository;
+
     @Override
     public void run(String... strings) throws Exception {
         logger.info("dataSource:" + ds.toString());
+        // 增加一条记录
+        Author author = new Author("yunsheng", "yang");
+        author = authorRepository.save(author);
+        Publisher publisher = new Publisher("yunsheng");
+        publisher = publisherRepository.save(publisher);
+        Book book = new Book("1001", "test1", author, publisher);
+        Book book1 = bookRepository.save(book);
         logger.info("number of books:" + bookRepository.count());
     }
 
