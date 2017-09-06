@@ -1,11 +1,18 @@
 package org.test.bookpub;
 
-import org.apache.catalina.filters.RemoteIpFilter;
+//import org.apache.catalina.filters.RemoteIpFilter;
+
+import org.apache.catalina.connector.Connector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -17,15 +24,16 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.test.bookpub.repository.BookRepository;
 import org.test.bookpub.utils.BookFormatter;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class WebConfiguration extends WebMvcConfigurerAdapter {
-    @Bean
-    public RemoteIpFilter remoteIpFilter() {
-        return new RemoteIpFilter();
-    }
+//    @Bean
+//    public RemoteIpFilter remoteIpFilter() {
+//        return new RemoteIpFilter();
+//    }
 
     @Bean
     public LocaleChangeInterceptor localeChangeInterceptor() {
@@ -95,5 +103,17 @@ public class WebConfiguration extends WebMvcConfigurerAdapter {
         };
     }
 
+    @Bean
+    public EmbeddedServletContainerFactory servletContainer() {
+        TomcatEmbeddedServletContainerFactory tomcat = new TomcatEmbeddedServletContainerFactory();
+        tomcat.addAdditionalTomcatConnectors(createStandardConnector());
+        return tomcat;
+    }
+
+    private Connector createStandardConnector() {
+        Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
+        connector.setPort(8080);
+        return connector;
+    }
 
 }

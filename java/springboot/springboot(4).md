@@ -105,3 +105,82 @@ http://localhost:8080/books/session
             container.setSessionTimeout(1, TimeUnit.MINUTES);
         };
     }
+
+### 选择内嵌的servlet容器
+tomcat是springboot默认的servlet容器，但是我们也可以选择其他的容器，例如jetty。  
+#### 做法
+1. 排除tomcat的依赖，增加jetty依赖  
+
+		<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-web</artifactId>
+				<exclusions>
+					<exclusion>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-tomcat</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-jetty</artifactId>
+			</dependency>  
+
+2. 会发现有代码报错。因为RemoteIpFilter是tomcat的包里的。将其注释掉。  
+
+3. run  
+
+		2017-09-06 15:47:25.468  INFO 8580 --- [           main] org.eclipse.jetty.server.Server          : jetty-9.4.5.v20170502
+测试一切正常。  
+
+### 配置连接支持https
+关于htts这块，原文档已经过时，下面是自己摸索的。 
+
+#### 做法
+1. 为了使用https。首先需要创建一个keysotre。用来加解密同浏览器的SSL通信。   
+keytool是jdk的工具。我是jdk8，命令如下：    
+keytool -genkeypair -alias tomcat -keyalg RSA
+![](rsa.png)
+成功之后，在用户目录下会创建.keystore文件。
+
+2. 修改配置文件application.properties
+
+		server.port = 8443
+		server.ssl.key-store = ${user.home}/.keystore
+		server.ssl.key-store-password = 123456
+		server.ssl.key-password = 123456
+密码改成你自己的。。
+3. run
+这样就需要使用https访问8443端口了
+![](https.png)
+
+
+
+### 配置连接同时支持http和https
+企业应用中经常有这种场景，需要同时开两个端口，分别支持http和https。  
+但是上面的方法只能使用一个。不可同时配置，如果两个都启动，至少有一个要以编程的方式配置。Spring Boot官方文档建议在application.properties中配置HTTPS，因为HTTPS比HTTP更复杂一些。  
+
+继续上面操作。
+#### 做法
+1. 用代码给tomcat配置上一个http连接器  
+
+	    @Bean
+	    public EmbeddedServletContainerFactory servletContainer() {
+	        TomcatEmbeddedServletContainerFactory tomcat = new TomcatEmbeddedServletContainerFactory();
+	        tomcat.addAdditionalTomcatConnectors(createStandardConnector());
+	        return tomcat;
+	    }
+	
+	    private Connector createStandardConnector() {
+	        Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
+	        connector.setPort(8080);
+	        return connector;
+	    }
+我是放在WebConfiguration中，其实并不是一定要放在这。只要启动时加载就行。
+
+2. run  
+可以看到http也可以了。  
+![](http.png)
+
+综合起来看比原文简单的多。  
+唉，springbootcookbook现在看有些过时了，还是坚持看完吧，开卷有益，遇坑填坑吧。
