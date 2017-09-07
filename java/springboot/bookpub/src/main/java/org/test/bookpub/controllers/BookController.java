@@ -5,11 +5,13 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.test.bookpub.entity.Book;
 import org.test.bookpub.entity.Publisher;
+import org.test.bookpub.entity.Reviewer;
 import org.test.bookpub.repository.BookRepository;
 import org.test.bookpub.utils.Isbn;
 import org.test.bookpub.utils.IsbnEditor;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.util.List;
 
 @RestController
@@ -36,7 +38,7 @@ public class BookController {
     // 演示formatter
     @RequestMapping(value = "/{isbn}/reviewers", method =
             RequestMethod.GET)
-    public List<Publisher.Reviewer> getReviewers(@PathVariable("isbn") Book book) {
+    public List<Reviewer> getReviewers(@PathVariable("isbn") Book book) {
         return book.getReviewers();
     }
 

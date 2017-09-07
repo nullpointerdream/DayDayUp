@@ -1,6 +1,7 @@
 package org.test.bookpub.entity;
 
 import javax.persistence.*;
+
 import java.util.List;
 
 /**
@@ -19,7 +20,7 @@ public class Book {
     @ManyToOne
     private Publisher publisher;
     @ManyToMany
-    private List<Publisher.Reviewer> reviewers;
+    private List<Reviewer> reviewers;
 
     protected Book() {
     }
@@ -80,11 +81,24 @@ public class Book {
         this.publisher = publisher;
     }
 
-    public List<Publisher.Reviewer> getReviewers() {
+    public List<Reviewer> getReviewers() {
         return reviewers;
     }
 
-    public void setReviewers(List<Publisher.Reviewer> reviewers) {
+    public void setReviewers(List<Reviewer> reviewers) {
         this.reviewers = reviewers;
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + id +
+                ", isbn='" + isbn + '\'' +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", author=" + author +
+                ", publisher=" + publisher +
+                ", reviewers=" + reviewers +
+                '}';
     }
 }
