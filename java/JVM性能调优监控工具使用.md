@@ -6,12 +6,19 @@
 加 -l 参数，会打印额外的所信息，可以在发生死锁时用来查看锁持有情况。  
 -m 参数，不仅会输出java堆栈信息，还会输出c/c++堆栈信息，用来查看本地方法调用。  
 
-tid指Java Thread id。nid指native线程的id。prio是线程优先级。
+tid指Java Thread id。
+nid指native线程的id。操作系统映射的线程id，后面就用这个过滤查。
+prio是线程优先级。
+
+ jstack pid 是查询的该java进程下所有线程的堆栈信息。
+使用 `top -Hp <pid>` 显示该进程下所有线程的cpu消耗情况。
 
 堆栈信息中的线程id是十六进制表示的。
 
 所以在查询的时候，需要先将top显示的pid转成十六进制表示。  
-使用命令 `printf "%x\n" pid`  
+使用命令 `printf "%x\n" pid` 
+
+然后可以jstack -Pid | grep 十六进制的tid
 
 
 ### jmap

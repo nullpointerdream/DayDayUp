@@ -176,7 +176,7 @@
 目前，spring已经内置了大量的filter，首先我们看一下如何使用他们。比如我们希望得到的请求的用户真是url，而不是代理的url，可以使用这个filter。`RemoteIpFilter`。  
 
 1. 建一个配置类  
-在跟路径下新建一个配置类。 
+在根路径下新建一个配置类。 
 
 		@Configuration
 		public class WebConfiguration {
